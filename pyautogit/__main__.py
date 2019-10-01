@@ -1,0 +1,3 @@
+import pyautogit
+
+pyautogit.main()

@@ -1,7 +1,8 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from sys import platform
 
-required_packages = ['py_cui']
+#required_packages = ['py_cui']
+required_packages = []
 if platform == "win32":
     required_packages.append('wexpect')
 else:
@@ -17,14 +18,15 @@ setup(
     license="BSD 3-Clause",
     keywords="git command-line cli cui curses",
     url="https://github.com/jwlodek/pyautogit",
-    long_description=read("README.md")
-    long_description_content_type='text/markdown',
+    #long_description=read("README.md"),
+    #long_description_content_type='text/markdown',
+    packages = find_packages(exclude=['tests', 'docs']),
     extras_require={
         'test': ['pytest'],
     },
     entry_pointe={
-        'console_scripts' :[
-            'pyautogit=pyautogit:main'
+        'console_scripts': [
+            'pyautogit = pyautogit:main',
         ],
     },
     install_requires=required_packages,

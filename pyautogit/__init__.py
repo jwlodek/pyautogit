@@ -6,11 +6,15 @@ Author: Jakub Wlodek
 Created: 01-Oct-2019
 """
 
-from pyautogit import repo_select_screen
 import argparse
 import getpass
 import os
 import subprocess
+
+import py_cui
+
+import pyautogit.repo_select_screen as RepoSelect
+import pyautogit.autogit as Autogit
 
 
 __version__='0.0.1'
@@ -18,7 +22,9 @@ __version__='0.0.1'
 
 class PyAutoGitManager:
 
-    def __init__(self, target_path, current_state, credentials):
+    def __init__(self, root, target_path, current_state, credentials):
+
+        self.root = root
 
         self.current_path = os.path.abspath(target_path)
         self.top_path = self.current_path
@@ -27,17 +33,35 @@ class PyAutoGitManager:
         #    self.top_path = os.path.
         self.credentials = credentials
         self.repos = find_repos_in_path(target_path)
+
+
+        self.repo_select_widget_set = py_cui.widget_set.WidgetSet(5,4)
+        self.repo_select_widget_set.add_block_label(get_logo_text(), 0, 0, column_span=2)
+        self.repo_select_widget_set.add_label('v{} - https://github.com/jwlodek/pyautogit'.format(__version__), 0, 2, column_span=2)
+        self.repo_menu = self.repo_select_widget_set.add_scroll_menu('Repositories in Workspace', 1, 2, row_span=2)
+        self.repo_menu.add_item_list(self.repos)
+        self.repo_menu.add_key_command(py_cui.keys.KEY_ENTER, lambda : RepoSelect.open_autogit_window(self))
+        self.repo_menu.add_key_command(py_cui.keys.KEY_SPACE, lambda : RepoSelect.show_repo_status(self))
+        self.git_status_box = self.repo_select_widget_set.add_text_block('Git Repo Status', 1, 0, row_span=4, column_span=2)
+        self.git_status_box.is_selectable = False
+        self.current_status_box = self.repo_select_widget_set.add_text_block('Current Status', 1, 3, row_span=2)
+        self.current_status_box.is_selectable = False
+        self.clone_new_box = self.repo_select_widget_set.add_text_box('Clone Repository - Enter Remote URL', 3, 2, column_span=2)
+        self.clone_new_box.add_key_command(py_cui.keys.KEY_ENTER, lambda : RepoSelect.clone_new_repo(self))
+        self.create_new_box = self.repo_select_widget_set.add_text_box('Create New Repository - Enter Directory Name', 4, 2, column_span=2)
+        self.create_new_box.add_key_command(py_cui.keys.KEY_ENTER, lambda : RepoSelect.create_new_repo(self))
+        self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_R_LOWER, self.refresh_repos)
+        RepoSelect.update_status(self)
+        self.root.apply_widget_set(self.repo_select_widget_set)
+
+
+        self.autogit_widget_set = py_cui.widget_set.WidgetSet(5, 5)
         #self.autogit_cui = autogit.AutoGitCUI()
-        self.repo_select_cui = repo_select_screen.RepoSelectCUI(self, self.top_path)
 
-    def refresh(self):
+    def refresh_repos(self):
         self.repos = find_repos_in_path(self.top_path)
-
-    def start(self):
-        if self.current_state == 'repo':
-            self.autogit_cui.start()
-        else:
-            self.repo_select_cui.start()
+        self.repo_menu.clear()
+        self.repo_menu.add_item_list(self.repos)
 
 
 def find_repos_in_path(path):
@@ -100,6 +124,7 @@ def main():
 
     target, in_type, credentials = parse_args()
 
-    manager = PyAutoGitManager(target, in_type, credentials)
+    root = py_cui.PyCUI(5, 4)
+    manager = PyAutoGitManager(root, target, in_type, credentials)
 
-    manager.start()
+    root.start()

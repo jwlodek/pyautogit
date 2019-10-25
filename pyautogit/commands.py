@@ -69,6 +69,22 @@ def git_status(repo_path='.'):
     return handle_basic_command(command, name)
 
 
+def git_get_remotes():
+    command = "git remote"
+    name = "git_get_remotes"
+    return handle_basic_command(command, name)
+
+def git_get_branches():
+    command = "git branch"
+    name = "git_get_branches"
+    return handle_basic_command(command, name)
+
+
+def git_get_recent_commits(branch):
+    command = "git --no-pager log {} --oneline".format(branch)
+    name = "git_get_recent_commits"
+    return handle_basic_command(command, name)
+
 
 def git_init_new_repo(new_dir_target):
     out = None

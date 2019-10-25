@@ -9,47 +9,64 @@ import py_cui
 import pyautogit
 import pyautogit.commands
 
+from subprocess import Popen, PIPE
+
 
 
 def refresh_git_status(manager):
 
-    try:
-        proc = Popen(['git', 'branch'], stdout=PIPE, stderr=PIPE)
-        out, err = proc.communicate()
-        out = out.decode().splitlines()
-        manager.branch_menu.clear()
-        manager.branch_menu.add_item_list(out)
-        selected_branch = 0
-        for branch in manager.branch_menu.get_item_list():
-            if branch.startswith('*'):
-                break
-            selected_branch = selected_branch + 1
-        remote = manager.git_remotes_menu.selected_item
-        proc = Popen(['git', 'remote'], stdout=PIPE, stderr=PIPE)
-        out, err = proc.communicate()
-        out = out.decode().splitlines()
-        manager.git_remotes_menu.clear()
-        manager.git_remotes_menu.add_item_list(out)
-        proc = Popen(['git', '--no-pager', 'log', manager.branch_menu.get()[2:], '--oneline'], stdout=PIPE, stderr=PIPE)
-        out, err = proc.communicate()
-        out = out.decode().splitlines()
-        manager.git_commits_menu.clear()
-        manager.git_commits_menu.add_item_list(out)
-        selected_file = manager.add_files_menu.selected_item
-        proc = Popen(['git', 'status', '-s'], stdout=PIPE, stderr=PIPE)
-        out, err = proc.communicate()
-        out = out.decode().splitlines()
-        manager.add_files_menu.clear()
-        manager.add_files_menu.add_item_list(out)
-        if len(manager.branch_menu.get_item_list()) > selected_branch:
-            manager.branch_menu.selected_item = selected_branch
-        if len(manager.git_remotes_menu.get_item_list()) > remote:
-            manager.git_remotes_menu.selected_item = remote
-        if len(manager.add_files_menu.get_item_list()) > selected_file:
-            manager.add_files_menu.selected_item = selected_file
+    remote = manager.remotes_menu.selected_item
+    selected_file = manager.add_files_menu.selected_item
 
-    except:
-        self.root.show_warning_popup('Git Failed', 'Unable to get git status, please check git installation')
+    get_repo_branches(manager)
+    get_repo_remotes(manager)
+    get_repo_status_short(manager)
+    get_recent_commits(manager)
+
+    if len(manager.remotes_menu.get_item_list()) > remote:
+        manager.remotes_menu.selected_item = remote
+    if len(manager.add_files_menu.get_item_list()) > selected_file:
+        manager.add_files_menu.selected_item = selected_file
+
+
+def get_repo_status_short(manager):
+    out, err = pyautogit.commands.git_status_short()
+    if err < 0:
+        manager.root.show_error_popup('Cannot get git status', out)
+    manager.add_files_menu.clear()
+    manager.add_files_menu.add_item_list(out.splitlines())
+
+
+def get_repo_remotes(manager):
+    out, err = pyautogit.commands.git_get_remotes()
+    if err < 0:
+        manager.root.show_error_popup('Cannot get git remotes', out)
+    manager.remotes_menu.clear()
+    manager.remotes_menu.add_item_list(out.splitlines())
+
+
+def get_repo_branches(manager):
+    out, err = pyautogit.commands.git_get_branches()
+    if err < 0:
+        manager.root.show_error_popup('Cannot get git branches', out)
+    manager.branch_menu.clear()
+    manager.branch_menu.add_item_list(out.splitlines())
+    selected_branch = 0
+    for branch in manager.branch_menu.get_item_list():
+        if branch.startswith('*'):
+            break
+        selected_branch = selected_branch + 1
+    manager.branch_menu.selected_item = selected_branch
+
+
+def get_recent_commits(manager):
+
+    branch = manager.branch_menu.get()[2:]
+    out, err = pyautogit.commands.git_get_recent_commits(branch)
+    if err < 0:
+        manager.root.show_error_popup('Cannot get recent commits', out)
+    manager.commits_menu.clear()
+    manager.commits_menu.add_item_list(out.splitlines())
 
 
 def add_revert_file(manager):
@@ -73,8 +90,8 @@ def show_log(manager):
     if err < 0:
         manager.root.show_error_popup('Unable to show git log for branch {}.'.format(branch), out)
     else:
-        manager.diff_text_block.set_text(out)
-        manager.diff_text_block.title = 'Git log'
+        manager.info_text_block.set_text(out)
+        manager.info_text_block.title = 'Git log'
 
 
 def open_git_diff(manager):
@@ -82,8 +99,8 @@ def open_git_diff(manager):
     if err < 0:
         manager.root.show_error_popup('Unable to show git diff repo.', out)
     else:
-        manager.diff_text_block.set_text(out)
-        manager.diff_text_block.title = 'Git Diff'
+        manager.info_text_block.set_text(out)
+        manager.info_text_block.title = 'Git Diff'
 
 
 def open_git_diff_file(manager):
@@ -92,8 +109,8 @@ def open_git_diff_file(manager):
     if err < 0:
         manager.root.show_error_popup('Unable to show git diff for file {}.'.format(filename), out)
     else:
-        manager.diff_text_block.set_text(out)
-        manager.diff_text_block.title = 'Git Diff - {}'.format(filename)
+        manager.info_text_block.set_text(out)
+        manager.info_text_block.title = 'Git Diff - {}'.format(filename)
 
 
 def push_repo_branch_cred(manager):

@@ -44,9 +44,9 @@ class PyAutoGitManager:
         
         self.repo_menu = self.repo_select_widget_set.add_scroll_menu('Repositories in Workspace', 1, 2, row_span=2)
         self.repo_menu.add_item_list(self.repos)
-        self.repo_menu.add_key_command(py_cui.keys.KEY_ENTER, self.open_autogit_window)
-        self.repo_menu.add_key_command(py_cui.keys.KEY_SPACE, lambda : RepoSelect.show_repo_status(self))
-        self.repo_menu.add_key_command(py_cui.keys.KEY_DELETE, lambda : RepoSelect.delete_repo(self))
+        self.repo_menu.add_key_command(py_cui.keys.KEY_ENTER,   self.open_autogit_window)
+        self.repo_menu.add_key_command(py_cui.keys.KEY_SPACE,   lambda : RepoSelect.show_repo_status(self))
+        self.repo_menu.add_key_command(py_cui.keys.KEY_DELETE,  lambda : RepoSelect.delete_repo(self))
 
         self.git_status_box = self.repo_select_widget_set.add_text_block('Git Repo Status', 1, 0, row_span=4, column_span=2)
         self.git_status_box.is_selectable = False
@@ -64,7 +64,7 @@ class PyAutoGitManager:
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_C_LOWER, self.ask_credentials)
         RepoSelect.update_status(self)
         self.root.apply_widget_set(self.repo_select_widget_set)
-
+        
 
         # Autogit window screen widgets, key commands.
         self.autogit_widget_set = py_cui.widget_set.WidgetSet(9, 8)
@@ -72,7 +72,7 @@ class PyAutoGitManager:
         self.autogit_widget_set.add_key_command(py_cui.keys.KEY_BACKSPACE, self.open_repo_select_window)
         #self.autogit_widget_set.add_key_command(py_cui.keys.KEY_R_LOWER, self.refresh_git_status)
         #self.autogit_widget_set.add_key_command(py_cui.keys.KEY_M_LOWER, self.show_menu)
-        self.autogit_widget_set.add_key_command(py_cui.keys.KEY_L_LOWER, lambda : Autogit.show_log(self))
+        #self.autogit_widget_set.add_key_command(py_cui.keys.KEY_L_LOWER, lambda : Autogit.show_log(self))
         #self.autogit_widget_set.add_key_command(py_cui.keys.KEY_A_LOWER, self.add_all)
         #self.autogit_widget_set.add_key_command(py_cui.keys.KEY_E_LOWER, self.open_editor)
         #self.autogit_widget_set.add_key_command(py_cui.keys.KEY_F_LOWER, self.fetch_branch)
@@ -83,38 +83,38 @@ class PyAutoGitManager:
         self.add_files_menu.add_text_color_rule('?', py_cui.RED_ON_BLACK,   'startswith',       match_type='region', region=[0,3], include_whitespace=True)
         self.add_files_menu.add_text_color_rule(' ', py_cui.GREEN_ON_BLACK, 'notstartswith',    match_type='region', region=[0,3], include_whitespace=True)
         self.add_files_menu.add_text_color_rule('?', py_cui.GREEN_ON_BLACK, 'notstartswith',    match_type='region', region=[0,3], include_whitespace=True)
-        self.add_files_menu.add_key_command(py_cui.keys.KEY_ENTER, Autogit.add_revert_file(self))
-        self.add_files_menu.add_key_command(py_cui.keys.KEY_SPACE, Autogit.open_git_diff(self))
+        self.add_files_menu.add_key_command(py_cui.keys.KEY_ENTER, lambda : Autogit.add_revert_file(self))
+        self.add_files_menu.add_key_command(py_cui.keys.KEY_SPACE, lambda : Autogit.open_git_diff(self))
         self.add_files_menu.help_text = 'Enter - git add, Space - see diff, Arrows - scroll, Esc - exit'
 
-        self.git_remotes_menu =self.autogit_widget_set.add_scroll_menu('Git Remotes', 2, 0, row_span=2, column_span=2)
+        self.remotes_menu = self.autogit_widget_set.add_scroll_menu('Git Remotes', 2, 0, row_span=2, column_span=2)
 
         self.branch_menu = self.autogit_widget_set.add_scroll_menu('Git Branches', 4, 0, row_span=2, column_span=2)
-        self.branch_menu.add_key_command(py_cui.keys.KEY_ENTER, Autogit.checkout_branch(self))
-        self.branch_menu.add_key_command(py_cui.keys.KEY_SPACE, Autogit.show_log(self))
+        self.branch_menu.add_key_command(py_cui.keys.KEY_ENTER, lambda : Autogit.checkout_branch(self))
+        self.branch_menu.add_key_command(py_cui.keys.KEY_SPACE, lambda : Autogit.show_log(self))
 
-        self.git_commits_menu = self.autogit_widget_set.add_scroll_menu('Recent Commits', 6, 0, row_span=2, column_span=2)
-        #self.git_commits_menu.add_key_command(py_cui.keys.KEY_ENTER, Autogit.show_git_commit_diff(self))
-        self.git_commits_menu.add_text_color_rule(' ', py_cui.GREEN_ON_BLACK, 'notstartswith', match_type='region', region=[0,7], include_whitespace=True)
+        self.commits_menu = self.autogit_widget_set.add_scroll_menu('Recent Commits', 6, 0, row_span=2, column_span=2)
+        #self.commits_menu.add_key_command(py_cui.keys.KEY_ENTER, Autogit.show_git_commit_diff(self))
+        self.commits_menu.add_text_color_rule(' ', py_cui.GREEN_ON_BLACK, 'notstartswith', match_type='region', region=[0,7], include_whitespace=True)
 
-        self.diff_text_block = self.autogit_widget_set.add_text_block('Git Info', 0, 2, row_span=8, column_span=6)
-        self.diff_text_block.add_text_color_rule('+',           py_cui.GREEN_ON_BLACK,  'startswith')
-        self.diff_text_block.add_text_color_rule('-',           py_cui.RED_ON_BLACK,    'startswith')
-        self.diff_text_block.add_text_color_rule('commit',      py_cui.YELLOW_ON_BLACK, 'startswith')
-        self.diff_text_block.add_text_color_rule('Copyright',   py_cui.CYAN_ON_BLACK,   'startswith')
-        self.diff_text_block.add_text_color_rule('@.*@',        py_cui.CYAN_ON_BLACK,   'contains', match_type='regex')
-        #self.diff_text_block.selectable = False
-        self.diff_text_block.set_text(get_logo_text())
+        self.info_text_block = self.autogit_widget_set.add_text_block('Git Info', 0, 2, row_span=8, column_span=6)
+        self.info_text_block.add_text_color_rule('+',           py_cui.GREEN_ON_BLACK,  'startswith')
+        self.info_text_block.add_text_color_rule('-',           py_cui.RED_ON_BLACK,    'startswith')
+        self.info_text_block.add_text_color_rule('commit',      py_cui.YELLOW_ON_BLACK, 'startswith')
+        self.info_text_block.add_text_color_rule('Copyright',   py_cui.CYAN_ON_BLACK,   'startswith')
+        self.info_text_block.add_text_color_rule('@.*@',        py_cui.CYAN_ON_BLACK,   'contains', match_type='regex')
+        #self.info_text_block.selectable = False
+        self.info_text_block.set_text(get_logo_text())
         
         self.new_branch_textbox = self.autogit_widget_set.add_text_box('New Branch', 8, 0, column_span=2)
         self.commit_message_box = self.autogit_widget_set.add_text_box('Commit Message', 8, 2, column_span=6)
 
 
-        #self.git_remotes_menu.add_key_command(py_cui.keys.KEY_ENTER, self.show_remote_info)
+        #self.remotes_menu.add_key_command(py_cui.keys.KEY_ENTER, self.show_remote_info)
 
         #self.new_branch_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.create_new_branch)
         #self.commit_message_box.add_key_command(py_cui.keys.KEY_ENTER, self.ask_to_commit)
-
+        
 
 
     def refresh_repos(self):
@@ -130,6 +130,7 @@ class PyAutoGitManager:
         self.root.set_title('pyautogit v{} - {}'.format(__version__, target))
         self.root.set_status_bar_text('Quit - q | Full Menu - m | Refresh - r | Add all - a | Git log - l | Open Editor - e | Pull Branch - f | Push Branch - p')
         Autogit.refresh_git_status(self)
+
 
     def open_repo_select_window(self):
         self.root.apply_widget_set(self.repo_select_widget_set)

@@ -196,9 +196,9 @@ class RepoControlManager:
 
     def push_repo_branch_cred(self):
         if not self.manager.were_credentials_entered():
-            self.manager.ask_credentials(callback=self.push_repo_branch)
+            self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Pushing', self.push_repo_branch))
         else:
-            self.push_repo_branch()
+            self.manager.perform_long_operation('Pushing', self.push_repo_branch)
 
 
     def push_repo_branch(self):
@@ -210,5 +210,6 @@ class RepoControlManager:
         else:
             self.manager.root.show_message_popup('Pushed Successfully', out)
         self.refresh_git_status()
+        self.manager.root.stop_loading_popup()
 
 

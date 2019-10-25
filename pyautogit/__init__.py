@@ -10,6 +10,7 @@ import argparse
 import getpass
 import os
 import subprocess
+import threading
 from subprocess import Popen, PIPE
 
 import py_cui
@@ -39,6 +40,8 @@ class PyAutoGitManager:
 
         self.default_editor = None
         self.user_message = None
+
+        self.operation_thread = None
 
         # Repository select screen widgets, key commands.
         self.repos = find_repos_in_path(target_path)
@@ -205,8 +208,15 @@ class PyAutoGitManager:
 
         return len(self.credentials) == 2
 
+    def perform_long_operation(self, title, long_operation_function):
+        self.root.show_loading_icon_popup('Please Wait', title)
+        self.operation_thread = threading.Tread(target=long_operation_function)
+        self.operation_thread.start()
+
+
     def update_default_editor(self, editor):
         self.default_editor = editor
+        self.root.show_message_pop('Default Editor Changed', '{} editor will be used to open directories'.format(editor))
 
     def ask_default_editor(self):
         self.root.show_text_box_popup('Please enter a default editor command. (Ex. code, emacs)', self.update_default_editor)

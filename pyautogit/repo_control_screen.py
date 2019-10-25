@@ -16,6 +16,8 @@ class RepoControlManager:
 
     def __init__(self, top_manager):
         self.manager = top_manager
+        self.message = ''
+        self.status = 0
 
     def refresh_git_status(self):
 
@@ -196,20 +198,25 @@ class RepoControlManager:
 
     def push_repo_branch_cred(self):
         if not self.manager.were_credentials_entered():
-            self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Pushing', self.push_repo_branch))
+            self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Pushing', self.push_repo_branch, self.show_push_result))
         else:
-            self.manager.perform_long_operation('Pushing', self.push_repo_branch)
+            self.manager.perform_long_operation('Pushing', self.push_repo_branch, self.show_push_result)
 
 
     def push_repo_branch(self):
         branch = self.manager.branch_menu.get()[2:]
         remote = self.manager.remotes_menu.get()
-        out, err = pyautogit.commands.git_push_to_branch(branch, remote, self.manager.credentials)
-        if err != 0:
-            self.manager.root.show_error_popup('Unable to push to remote!', out)
-        else:
-            self.manager.root.show_message_popup('Pushed Successfully', out)
+        self.message, self.status = pyautogit.commands.git_push_to_branch(branch, remote, self.manager.credentials)
         self.refresh_git_status()
         self.manager.root.stop_loading_popup()
+
+
+    def show_push_result(self):
+        if self.status != 0:
+            self.manager.root.show_error_popup('Unable to push to remote!', self.message)
+        else:
+            self.manager.root.show_message_popup('Pushed Successfully', self.message)
+        self.status = 0
+        self.message = ''
 
 

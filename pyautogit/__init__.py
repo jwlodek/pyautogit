@@ -208,8 +208,8 @@ class PyAutoGitManager:
 
         return len(self.credentials) == 2
 
-    def perform_long_operation(self, title, long_operation_function):
-        self.root.show_loading_icon_popup('Please Wait', title)
+    def perform_long_operation(self, title, long_operation_function, post_loading_callback):
+        self.root.show_loading_icon_popup('Please Wait', title, callback = post_loading_callback)
         self.operation_thread = threading.Thread(target=long_operation_function)
         self.operation_thread.start()
 

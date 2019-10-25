@@ -209,6 +209,6 @@ class RepoControlManager:
             self.manager.root.show_error_popup('Unable to push to remote!', out)
         else:
             self.manager.root.show_message_popup('Pushed Successfully', out)
-        self.manager.refresh_git_status()
+        self.refresh_git_status()
 
 

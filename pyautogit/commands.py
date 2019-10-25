@@ -228,17 +228,10 @@ def git_pull_branch(branch, remote, credentials):
 def git_push_to_branch(branch, remote, credentials, repo_path='.'):
     out = None
     err = 0
-    if os.path.exists(new_repo_url.split('/')[-1]):
-        err = -1
-        message = "The target repo couldn't be cloned - Directory exists"
-    else:
-        try:
-            command = 'git push {} {}'.format(remote, branch)
-            handle_credential_command(command, credentials)
-            out = "Pushed to branch successfully"
-        except:
-            err = -1
-            out = "Failed to clone {}".format(new_repo_url)
+    command = 'git push {} {}'.format(remote, branch)
+    out, err = handle_credential_command(command, credentials)
+    if err == 0:
+        out = "Pushed to branch successfully"
 
     return out, err
 

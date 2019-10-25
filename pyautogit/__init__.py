@@ -15,7 +15,7 @@ from subprocess import Popen, PIPE
 import py_cui
 
 import pyautogit.repo_select_screen as RepoSelect
-import pyautogit.autogit as Autogit
+import pyautogit.repo_control_screen as RepoControl
 
 
 __version__='0.0.1'
@@ -26,6 +26,8 @@ class PyAutoGitManager:
     def __init__(self, root, target_path, current_state, credentials):
 
         self.root = root
+        self.repo_select_manager = RepoSelect.RepoSelectManager(self)
+        self.repo_control_manager = RepoControl.RepoControlManager(self)
 
         self.current_path = os.path.abspath(target_path)
         self.top_path = self.current_path
@@ -33,7 +35,10 @@ class PyAutoGitManager:
         #if current_state == 'repo':
         #    self.top_path = os.path.
         self.credentials = credentials
-        self.post_credential_callback = None
+        self.post_input_callback = None
+
+        self.default_editor = None
+        self.user_message = None
 
         # Repository select screen widgets, key commands.
         self.repos = find_repos_in_path(target_path)
@@ -45,8 +50,8 @@ class PyAutoGitManager:
         self.repo_menu = self.repo_select_widget_set.add_scroll_menu('Repositories in Workspace', 1, 2, row_span=2)
         self.repo_menu.add_item_list(self.repos)
         self.repo_menu.add_key_command(py_cui.keys.KEY_ENTER,   self.open_autogit_window)
-        self.repo_menu.add_key_command(py_cui.keys.KEY_SPACE,   lambda : RepoSelect.show_repo_status(self))
-        self.repo_menu.add_key_command(py_cui.keys.KEY_DELETE,  lambda : RepoSelect.delete_repo(self))
+        self.repo_menu.add_key_command(py_cui.keys.KEY_SPACE,   self.repo_select_manager.show_repo_status)
+        self.repo_menu.add_key_command(py_cui.keys.KEY_DELETE,  self.repo_select_manager.ask_delete_repo)
 
         self.git_status_box = self.repo_select_widget_set.add_text_block('Git Repo Status', 1, 0, row_span=4, column_span=2)
         self.git_status_box.is_selectable = False
@@ -55,46 +60,47 @@ class PyAutoGitManager:
         self.current_status_box.is_selectable = False
         
         self.clone_new_box = self.repo_select_widget_set.add_text_box('Clone Repository - Enter Remote URL', 3, 2, column_span=2)
-        self.clone_new_box.add_key_command(py_cui.keys.KEY_ENTER, lambda : RepoSelect.clone_new_repo_cred(self))
+        self.clone_new_box.add_key_command(py_cui.keys.KEY_ENTER, self.repo_select_manager.clone_new_repo_cred)
         
         self.create_new_box = self.repo_select_widget_set.add_text_box('Create New Repository - Enter Directory Name', 4, 2, column_span=2)
-        self.create_new_box.add_key_command(py_cui.keys.KEY_ENTER, lambda : RepoSelect.create_new_repo(self))
+        self.create_new_box.add_key_command(py_cui.keys.KEY_ENTER, self.repo_select_manager.create_new_repo)
         
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_R_LOWER, self.refresh_repos)
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_C_LOWER, self.ask_credentials)
-        RepoSelect.update_status(self)
+        self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_E_LOWER, self.ask_default_editor)
+        self.repo_select_manager.update_status()
         self.root.apply_widget_set(self.repo_select_widget_set)
         
 
-        # Autogit window screen widgets, key commands.
+        # Repo Control window screen widgets, key commands.
         self.autogit_widget_set = py_cui.widget_set.WidgetSet(9, 8)
 
         self.autogit_widget_set.add_key_command(py_cui.keys.KEY_BACKSPACE, self.open_repo_select_window)
-        #self.autogit_widget_set.add_key_command(py_cui.keys.KEY_R_LOWER, self.refresh_git_status)
+        self.autogit_widget_set.add_key_command(py_cui.keys.KEY_R_LOWER, self.repo_control_manager.refresh_git_status)
         #self.autogit_widget_set.add_key_command(py_cui.keys.KEY_M_LOWER, self.show_menu)
-        #self.autogit_widget_set.add_key_command(py_cui.keys.KEY_L_LOWER, lambda : Autogit.show_log(self))
-        #self.autogit_widget_set.add_key_command(py_cui.keys.KEY_A_LOWER, self.add_all)
-        #self.autogit_widget_set.add_key_command(py_cui.keys.KEY_E_LOWER, self.open_editor)
-        #self.autogit_widget_set.add_key_command(py_cui.keys.KEY_F_LOWER, self.fetch_branch)
-        #self.autogit_widget_set.add_key_command(py_cui.keys.KEY_P_LOWER, self.push_branch)
+        self.autogit_widget_set.add_key_command(py_cui.keys.KEY_L_LOWER, self.repo_control_manager.show_log)
+        self.autogit_widget_set.add_key_command(py_cui.keys.KEY_A_LOWER, self.repo_control_manager.add_all_changes)
+        self.autogit_widget_set.add_key_command(py_cui.keys.KEY_E_LOWER, self.repo_control_manager.open_editor)
+        self.autogit_widget_set.add_key_command(py_cui.keys.KEY_F_LOWER, self.repo_control_manager.pull_repo_branch_cred)
+        self.autogit_widget_set.add_key_command(py_cui.keys.KEY_P_LOWER, self.repo_control_manager.push_repo_branch_cred)
 
         self.add_files_menu = self.autogit_widget_set.add_scroll_menu('Add Files', 0, 0, row_span=2, column_span=2)
         self.add_files_menu.add_text_color_rule(' ', py_cui.RED_ON_BLACK,   'startswith',       match_type='region', region=[0,3], include_whitespace=True)
         self.add_files_menu.add_text_color_rule('?', py_cui.RED_ON_BLACK,   'startswith',       match_type='region', region=[0,3], include_whitespace=True)
         self.add_files_menu.add_text_color_rule(' ', py_cui.GREEN_ON_BLACK, 'notstartswith',    match_type='region', region=[0,3], include_whitespace=True)
-        self.add_files_menu.add_text_color_rule('?', py_cui.GREEN_ON_BLACK, 'notstartswith',    match_type='region', region=[0,3], include_whitespace=True)
-        self.add_files_menu.add_key_command(py_cui.keys.KEY_ENTER, lambda : Autogit.add_revert_file(self))
-        self.add_files_menu.add_key_command(py_cui.keys.KEY_SPACE, lambda : Autogit.open_git_diff(self))
+        self.add_files_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.add_revert_file)
+        self.add_files_menu.add_key_command(py_cui.keys.KEY_SPACE, self.repo_control_manager.open_git_diff)
         self.add_files_menu.help_text = 'Enter - git add, Space - see diff, Arrows - scroll, Esc - exit'
 
         self.remotes_menu = self.autogit_widget_set.add_scroll_menu('Git Remotes', 2, 0, row_span=2, column_span=2)
+        self.remotes_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.show_remote_info)
 
         self.branch_menu = self.autogit_widget_set.add_scroll_menu('Git Branches', 4, 0, row_span=2, column_span=2)
-        self.branch_menu.add_key_command(py_cui.keys.KEY_ENTER, lambda : Autogit.checkout_branch(self))
-        self.branch_menu.add_key_command(py_cui.keys.KEY_SPACE, lambda : Autogit.show_log(self))
+        self.branch_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.checkout_branch)
+        self.branch_menu.add_key_command(py_cui.keys.KEY_SPACE, self.repo_control_manager.show_log)
 
         self.commits_menu = self.autogit_widget_set.add_scroll_menu('Recent Commits', 6, 0, row_span=2, column_span=2)
-        #self.commits_menu.add_key_command(py_cui.keys.KEY_ENTER, Autogit.show_git_commit_diff(self))
+        self.commits_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.open_git_diff_file)
         self.commits_menu.add_text_color_rule(' ', py_cui.GREEN_ON_BLACK, 'notstartswith', match_type='region', region=[0,7], include_whitespace=True)
 
         self.info_text_block = self.autogit_widget_set.add_text_block('Git Info', 0, 2, row_span=8, column_span=6)
@@ -107,14 +113,13 @@ class PyAutoGitManager:
         self.info_text_block.set_text(get_logo_text())
         
         self.new_branch_textbox = self.autogit_widget_set.add_text_box('New Branch', 8, 0, column_span=2)
-        self.commit_message_box = self.autogit_widget_set.add_text_box('Commit Message', 8, 2, column_span=6)
-
-
-        #self.remotes_menu.add_key_command(py_cui.keys.KEY_ENTER, self.show_remote_info)
-
         #self.new_branch_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.create_new_branch)
-        #self.commit_message_box.add_key_command(py_cui.keys.KEY_ENTER, self.ask_to_commit)
         
+        self.commit_message_box = self.autogit_widget_set.add_text_box('Commit Message', 8, 2, column_span=6)
+        self.commit_message_box.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.commit)
+        
+
+        self.autogit_widget_set.add_key_command(py_cui.keys.KEY_C_LOWER, lambda : self.root.move_focus(self.commit_message_box))
 
 
     def refresh_repos(self):
@@ -125,19 +130,27 @@ class PyAutoGitManager:
 
     def open_autogit_window(self):
         target = self.repo_menu.get()
+        self.git_status_box.clear()
         self.root.apply_widget_set(self.autogit_widget_set)
         os.chdir(target)
         self.root.set_title('pyautogit v{} - {}'.format(__version__, target))
         self.root.set_status_bar_text('Quit - q | Full Menu - m | Refresh - r | Add all - a | Git log - l | Open Editor - e | Pull Branch - f | Push Branch - p')
-        Autogit.refresh_git_status(self)
+        self.repo_control_manager.refresh_git_status()
 
 
     def open_repo_select_window(self):
+        self.commit_message_box.clear()
+        self.info_text_block.clear()
+        self.branch_menu.clear()
+        self.commits_menu.clear()
+        self.add_files_menu.clear()
+        self.remotes_menu.clear()
+        self.new_branch_textbox.clear()
         self.root.apply_widget_set(self.repo_select_widget_set)
         os.chdir('..')
         self.root.set_title('pyautogit v{} - Repository Selection'.format(__version__))
         self.root.set_status_bar_text('Quit - q | Full Menu - m | Refresh - r | Update Credentials - c')
-        RepoSelect.update_status(self)
+        self.repo_select_manager.update_status()
 
 
     # Credential handler functions
@@ -145,7 +158,7 @@ class PyAutoGitManager:
     def update_password(self, passwd):
         """Function called once password is entered. 
 
-        If necessary, fires the post_credential_callback function
+        If necessary, fires the post_input_callback function
 
         Parameters
         ----------
@@ -154,9 +167,9 @@ class PyAutoGitManager:
         """
 
         self.credentials.append(passwd)
-        if self.post_credential_callback is not None:
-            self.post_credential_callback()
-        self.post_credential_callback = None
+        if self.post_input_callback is not None:
+            self.post_input_callback()
+        self.post_input_callback = None
 
 
     def ask_password(self, user):
@@ -177,8 +190,9 @@ class PyAutoGitManager:
     def ask_credentials(self, callback=None):
         del self.credentials[:]
         if callback is not None:
-            self.post_credential_callback = callback
+            self.post_input_callback = callback
         self.root.show_text_box_popup("Please enter your git remote username", self.ask_password)
+
 
 
     def were_credentials_entered(self):
@@ -191,6 +205,24 @@ class PyAutoGitManager:
 
         return len(self.credentials) == 2
 
+    def update_default_editor(self, editor):
+        self.default_editor = editor
+
+    def ask_default_editor(self):
+        self.root.show_text_box_popup('Please enter a default editor command. (Ex. code, emacs)', self.update_default_editor)
+
+
+    def update_message(self, message):
+        self.user_message = message
+        if self.post_input_callback is not None:
+            self.post_input_callback()
+        self.post_input_callback = None
+
+
+    def ask_message(self, prompt, callback=None):
+        if callback is not None:
+            self.post_input_callback = callback
+        self.root.show_text_box_popup(prompt, self.update_message)
 
 # Helper pyautogit functions
 

@@ -7,6 +7,7 @@ Created: 01-Oct-2019
 """
 
 import os
+import re
 import shutil
 from sys import platform
 from subprocess import Popen, PIPE
@@ -23,23 +24,48 @@ def remove_repo_tree(target):
 
 
 def handle_credential_command(command, credentials, target_location='.'):
+    out = '\n\n'
+    err = 0
     try:
         child = EXPECT.spawn(command)
         child.expect('Username*')
         child.sendline(credentials[0])
-        child.expect('Password*')
+        child.expect('Password*:*')
         child.sendline(credentials[1])
         child.wait()
-    
+
     # In the case that we weren't prompted for uname and pass, don't throw exception.
     except EXPECT.exceptions.EOF:
         pass
+    
+    for line in child:
+        out = out + '{}\n'.format(line.decode())
+        
+    child.close()
+    err = child.exitstatus
+
+    return out, err
+        
 
 
-def handle_basic_command(command, name):
+def handle_basic_command(command, name, remove_quotes=True):
     out = None
     err = 0
-    run_command = command.split(' ')
+    if '"' in command:
+        run_command = []
+        strings = re.findall('"[^"]*"', command)
+        non_strings = re.split('"[^"]*"', command)
+        for i in range(len(strings)):
+            run_command = run_command + non_strings[i].strip().split(' ')
+            string_in = strings[i]
+            if remove_quotes:
+                string_in = string_in[1:]
+                string_in = string_in[:(len(string_in) - 1)]
+            run_command.append(string_in)
+        if len(non_strings) == (len(strings) + 1) and len(non_strings[len(strings)]) > 0:
+            run_command.append(non_strings[len(strings) + 1])
+    else:
+        run_command = command.split(' ')
     try:
         proc = Popen(run_command, stdout=PIPE, stderr=PIPE)
         output, error = proc.communicate()
@@ -53,6 +79,18 @@ def handle_basic_command(command, name):
         err = -1
     return out, err
 
+
+def handle_open_external_program_command(command, name):
+    out = None
+    err = 0
+    run_command = command.split(' ')
+    try:
+        proc = Popen(run_command, stdout=PIPE, stderr=PIPE)
+        out = "Opened external program"
+    except:
+        out = "Unknown error processing function: {}".format(name)
+        err = -1
+    return out, err
 
 
 def git_status_short(repo_path='.'):
@@ -74,6 +112,12 @@ def git_get_remotes():
     name = "git_get_remotes"
     return handle_basic_command(command, name)
 
+def git_get_remote_info(remote):
+    command = 'git remote show -n {}'.format(remote)
+    name='git_get_remote_info'
+    return handle_basic_command(command, name)
+
+
 def git_get_branches():
     command = "git branch"
     name = "git_get_branches"
@@ -87,8 +131,6 @@ def git_get_recent_commits(branch):
 
 
 def git_init_new_repo(new_dir_target):
-    out = None
-    err = 0
     if os.path.exists(new_dir_target):
         err = -1
         out = "Path already exists"
@@ -112,8 +154,10 @@ def git_clone_new_repo(new_repo_url, credentials):
         out = "The target repo couldn't be cloned - Directory exists"
     else:
         command = 'git clone {}'.format(new_repo_url)
-        handle_credential_command(command, credentials)
-        out = "Successfully cloned {}".format(new_repo_url)
+        out, err = handle_credential_command(command, credentials)
+        if err == 0:
+            out = "Successfully cloned {}".format(new_repo_url)
+            
     return out, err
 
 
@@ -124,11 +168,15 @@ def git_add_all():
 
 
 def git_add_file(filename):
-    command = 'git add filename'
+    command = 'git add {}'.format(filename)
     name = 'git_add_file'
     return handle_basic_command(command, name)
 
 
+def git_reset_file(filename):
+    command = 'git reset HEAD {}'.format(filename)
+    name = 'git_reset_file'
+    return handle_basic_command(command, name)
 
 def git_create_new_branch(branchname, checkout=True):
     command = 'git checkout -b {}'.format(branchname)
@@ -171,10 +219,10 @@ def git_diff(repo_path = '.'):
     return handle_basic_command(command, name)
 
 
-def git_pull_branch(branch, remote):
+def git_pull_branch(branch, remote, credentials):
     command = 'git pull {} {}'.format(remote, branch)
-    name = 'git_pull_branch'
-    return handle_basic_command(command, name)
+    return handle_credential_command(command, credentials)
+
 
 
 def git_push_to_branch(branch, remote, credentials, repo_path='.'):
@@ -193,3 +241,18 @@ def git_push_to_branch(branch, remote, credentials, repo_path='.'):
             out = "Failed to clone {}".format(new_repo_url)
 
     return out, err
+
+
+def open_default_editor(default_editor, path):
+    command = '{} {}'.format(default_editor, path)
+    name = "open_default_editor"
+    return handle_open_external_program_command(command, name)
+
+
+def git_commit_changes(commit_message):
+    if len(commit_message) == 0:
+        return "No commit message entered", -1
+    else:
+        command = 'git commit -m "{}"'.format(commit_message)
+        name = "git_commit_changes"
+        return handle_basic_command(command, name)

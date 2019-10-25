@@ -210,7 +210,7 @@ class PyAutoGitManager:
 
     def perform_long_operation(self, title, long_operation_function):
         self.root.show_loading_icon_popup('Please Wait', title)
-        self.operation_thread = threading.Tread(target=long_operation_function)
+        self.operation_thread = threading.Thread(target=long_operation_function)
         self.operation_thread.start()
 
 

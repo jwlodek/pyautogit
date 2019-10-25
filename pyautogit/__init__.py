@@ -71,6 +71,7 @@ class PyAutoGitManager:
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_R_LOWER, self.refresh_repos)
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_C_LOWER, self.ask_credentials)
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_E_LOWER, self.ask_default_editor)
+        self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_A_LOWER, lambda : self.git_status_box.set_text(get_about_info()))
         self.repo_select_manager.update_status()
         self.root.apply_widget_set(self.repo_select_widget_set)
         
@@ -92,7 +93,7 @@ class PyAutoGitManager:
         self.add_files_menu.add_text_color_rule('?', py_cui.RED_ON_BLACK,   'startswith',       match_type='region', region=[0,3], include_whitespace=True)
         self.add_files_menu.add_text_color_rule(' ', py_cui.GREEN_ON_BLACK, 'notstartswith',    match_type='region', region=[0,3], include_whitespace=True)
         self.add_files_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.add_revert_file)
-        self.add_files_menu.add_key_command(py_cui.keys.KEY_SPACE, self.repo_control_manager.open_git_diff)
+        self.add_files_menu.add_key_command(py_cui.keys.KEY_SPACE, self.repo_control_manager.open_git_diff_file)
         self.add_files_menu.help_text = 'Enter - git add, Space - see diff, Arrows - scroll, Esc - exit'
 
         self.remotes_menu = self.autogit_widget_set.add_scroll_menu('Git Remotes', 2, 0, row_span=2, column_span=2)
@@ -113,16 +114,17 @@ class PyAutoGitManager:
         self.info_text_block.add_text_color_rule('Copyright',   py_cui.CYAN_ON_BLACK,   'startswith')
         self.info_text_block.add_text_color_rule('@.*@',        py_cui.CYAN_ON_BLACK,   'contains', match_type='regex')
         #self.info_text_block.selectable = False
-        self.info_text_block.set_text(get_logo_text())
+        self.info_text_block.set_text(get_about_info())
         
         self.new_branch_textbox = self.autogit_widget_set.add_text_box('New Branch', 8, 0, column_span=2)
-        #self.new_branch_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.create_new_branch)
+        self.new_branch_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.create_new_branch)
         
         self.commit_message_box = self.autogit_widget_set.add_text_box('Commit Message', 8, 2, column_span=6)
         self.commit_message_box.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.commit)
         
 
         self.autogit_widget_set.add_key_command(py_cui.keys.KEY_C_LOWER, lambda : self.root.move_focus(self.commit_message_box))
+        self.autogit_widget_set.add_key_command(py_cui.keys.KEY_I_LOWER, lambda : self.info_text_block.set_text(get_about_info()))
 
 
     def refresh_repos(self):
@@ -317,6 +319,20 @@ def get_logo_text():
     logo = logo +  "/_/    \\_\\____/   |_|  \\____/ \\_____|_____|  |_|   \n"
     return logo
 
+
+def get_about_info():
+    about_info = get_logo_text()
+    about_info = about_info + '\n\n\nAuthor: Jakub Wlodek\n\nPython CUI git client: https://github.com/jwlodek/pyautogit\n\n\n'
+    about_info = about_info + 'Powered by the py_cui Python Command Line UI library:\n\n'
+    about_info = about_info + 'https://github.com/jwlodek/py_cui\n\n\n'
+    about_info = about_info + 'Documentation available here:\n\n'
+    about_info = about_info + 'pyautogit: https://jwlodek.github.io/pyautogit-docs\n'
+    about_info = about_info + 'py_cui:    https://jwlodek.github.io/py_cui-docs\n\n\n'
+    about_info = about_info + 'Star me on Github!\n\n'
+    about_info = about_info + 'Copyright (c) 2019 Jakub Wlodek'
+    return about_info
+
+    
 
 def main():
     """ Entry point for pyautogit. Parses arguments, and initializes the CUI """

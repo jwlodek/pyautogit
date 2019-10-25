@@ -94,15 +94,6 @@ class RepoControlManager:
             self.manager.commits_menu.add_item_list(out.splitlines())
 
 
-    def checkout_branch(self):
-        if self.manager.branch_menu.get() is None:
-            return
-        branch = self.manager.branch_menu.get()[2:]
-        out, err = pyautogit.commands.git_checkout_branch(branch)
-        if err < 0:
-            self.manager.root.show_error_popup('Cannot checkout branch {}'.format(branch), out)
-
-
 
     def show_log(self):
         if self.manager.branch_menu.get() is None:
@@ -193,6 +184,7 @@ class RepoControlManager:
             self.manager.root.show_message_popup('Success', 'Committed: {}'.format(commit_message))
             self.refresh_git_status()
             self.show_log()
+        self.manager.commit_message_box.clear()
 
 
 
@@ -219,4 +211,28 @@ class RepoControlManager:
         self.status = 0
         self.message = ''
 
+
+    def create_new_branch(self):
+
+        new_branch_name = self.manager.new_branch_textbox.get()
+        if len(new_branch_name) == 0:
+            self.manager.root.show_error_popup('ERROR - Illegal branchname', 'Please enter a valid branchname.')
+        else:
+            out, err = pyautogit.commands.git_create_new_branch(new_branch_name)
+            if err != 0:
+                self.manager.show_error_popup('Failed to create branch', out)
+            self.manager.root.lose_focus()
+            self.manager.new_branch_textbox.clear()
+            self.refresh_git_status()
+
+    def checkout_branch(self):
+        branch = self.manager.branch_menu.get()
+        if branch is not None:
+            branch = branch[2:]
+            out, err = pyautogit.commands.git_checkout_branch(branch)
+            if err != 0:
+                self.manager.root.show_error_popup('Failed to checkout branch', out)
+            else:
+                self.manager.root.show_message_popup('Checkout Successful', 'Checked out branch {}'.format(branch))
+            self.refresh_git_status()
 

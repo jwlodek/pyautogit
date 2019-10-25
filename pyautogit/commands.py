@@ -213,9 +213,15 @@ def git_log(branch):
     return handle_basic_command(command, name)
 
 
-def git_diff(repo_path = '.'):
+def git_diff():
     command = 'git diff'
     name='git_diff'
+    return handle_basic_command(command, name)
+
+
+def git_diff_file(filename):
+    command = 'git diff {}'.format(filename)
+    name='git_diff_file'
     return handle_basic_command(command, name)
 
 

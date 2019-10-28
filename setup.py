@@ -24,7 +24,7 @@ setup(
     extras_require={
         'test': ['pytest'],
     },
-    entry_pointe={
+    entry_points={
         'console_scripts': [
             'pyautogit = pyautogit:main',
         ],

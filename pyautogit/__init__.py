@@ -81,7 +81,7 @@ class PyAutoGitManager:
 
         self.autogit_widget_set.add_key_command(py_cui.keys.KEY_BACKSPACE, self.open_repo_select_window)
         self.autogit_widget_set.add_key_command(py_cui.keys.KEY_R_LOWER, self.repo_control_manager.refresh_git_status)
-        #self.autogit_widget_set.add_key_command(py_cui.keys.KEY_M_LOWER, self.show_menu)
+        self.autogit_widget_set.add_key_command(py_cui.keys.KEY_M_LOWER, self.repo_control_manager.show_menu)
         self.autogit_widget_set.add_key_command(py_cui.keys.KEY_L_LOWER, self.repo_control_manager.show_log)
         self.autogit_widget_set.add_key_command(py_cui.keys.KEY_A_LOWER, self.repo_control_manager.add_all_changes)
         self.autogit_widget_set.add_key_command(py_cui.keys.KEY_E_LOWER, self.repo_control_manager.open_editor)
@@ -94,6 +94,7 @@ class PyAutoGitManager:
         self.add_files_menu.add_text_color_rule(' ', py_cui.GREEN_ON_BLACK, 'notstartswith',    match_type='region', region=[0,3], include_whitespace=True)
         self.add_files_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.add_revert_file)
         self.add_files_menu.add_key_command(py_cui.keys.KEY_SPACE, self.repo_control_manager.open_git_diff_file)
+        self.add_files_menu.add_key_command(py_cui.keys.KEY_E_LOWER, self.repo_control_manager.open_editor_file)
         self.add_files_menu.help_text = 'Enter - git add, Space - see diff, Arrows - scroll, Esc - exit'
 
         self.remotes_menu = self.autogit_widget_set.add_scroll_menu('Git Remotes', 2, 0, row_span=2, column_span=2)
@@ -218,7 +219,7 @@ class PyAutoGitManager:
 
     def update_default_editor(self, editor):
         self.default_editor = editor
-        self.root.show_message_pop('Default Editor Changed', '{} editor will be used to open directories'.format(editor))
+        self.root.show_message_popup('Default Editor Changed', '{} editor will be used to open directories'.format(editor))
 
     def ask_default_editor(self):
         self.root.show_text_box_popup('Please enter a default editor command. (Ex. code, emacs)', self.update_default_editor)

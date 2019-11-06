@@ -19,14 +19,39 @@ class RepoControlManager:
         self.message = ''
         self.status = 0
         self.utility_var = None
-        self.menu_choices = ['Add Remote', 'Add All', 'Push Branch', 'Pull Branch']
-
+        self.menu_choices = ['Add Remote', 'Add All', 'Push Branch', 'Pull Branch', 'Stash All', 'About']
 
     def process_menu_selection(self, selection):
         if selection == 'Add Remote':
             self.ask_new_remote_name()
+        elif selection == 'Add All':
+            self.add_all_changes()
+        elif selection == 'Push Branch':
+            self.push_repo_branch()
+        elif selection == 'Pull Branch':
+            self.pull_repo_branch()
+        elif selection == 'Stash All':
+            self.stash_all_changes()
+        elif selection == 'About':
+            self.manager.info_text_block.set_text(self.manager.get_logo_text + '\n' + self.manager.get_about_info)
         else:
             self.manager.root.show_warning_popup('Warning - Not supported', 'This menu item has not yet been implemented.')
+
+
+    def show_command_result(self, out, err):
+        show_in_box = False
+        if len(out.splitlines()) > 1:
+            popup_message = "Check Info Box For Output"
+            show_in_box = True
+        else:
+            popup_message = out
+        if err != 0:
+            self.manager.root.show_error_popup('Command Error', popup_message)
+        else:
+            self.manager.root.show_message_popup('Command Success', popup_message)
+        if show_in_box:
+            self.manager.info_text_block.title = 'Git Command Output'
+            self.manager.info_text_block.set_text(out)
 
 
     def show_menu(self):
@@ -139,6 +164,10 @@ class RepoControlManager:
             self.manager.info_text_block.title = 'Git log'
 
 
+    def stash_all_changes(self):
+        out, err = pyautogit.commands.git_stash_all()
+        self.show_command_result(out, err)
+
     def open_git_diff(self):
         out, err = pyautogit.commands.git_diff()
         if err < 0:
@@ -197,22 +226,17 @@ class RepoControlManager:
 
     def pull_repo_branch_cred(self):
         if not self.manager.were_credentials_entered():
-            self.manager.ask_credentials(callback=self.pull_repo_branch)
+            self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Pulling', self.pull_repo_branch, self.show_status))
         else:
-            self.pull_repo_branch()
+            self.manager.perform_long_operation('Pulling', self.pull_repo_branch, self.show_status)
 
 
     def pull_repo_branch(self):
         branch = self.manager.branch_menu.get()[2:]
         remote = self.manager.remotes_menu.get()
-        out, err = pyautogit.commands.git_pull_branch(branch, remote, self.manager.credentials)
-        if err != 0:
-            self.manager.root.show_error_popup('Failed to pull from remote', out)
-        else:
-            self.manager.info_text_block.set_text(out)
-            self.manager.info_text_block.title = 'Git Pull Status - {} - {}'.format(remote, branch)
-            self.manager.root.show_message_popup('Pulled branch', 'Successfully pulled branch {} from remote {}'.format(branch, remote))
+        self.message, self.status = pyautogit.commands.git_pull_branch(branch, remote, self.manager.credentials)
         self.refresh_git_status()
+        self.manager.root.stop_loading_popup()
 
 
     def commit(self):
@@ -230,9 +254,9 @@ class RepoControlManager:
 
     def push_repo_branch_cred(self):
         if not self.manager.were_credentials_entered():
-            self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Pushing', self.push_repo_branch, self.show_push_result))
+            self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Pushing', self.push_repo_branch, self.show_status))
         else:
-            self.manager.perform_long_operation('Pushing', self.push_repo_branch, self.show_push_result)
+            self.manager.perform_long_operation('Pushing', self.push_repo_branch, self.show_status)
 
 
     def push_repo_branch(self):
@@ -240,17 +264,13 @@ class RepoControlManager:
         remote = self.manager.remotes_menu.get()
         self.message, self.status = pyautogit.commands.git_push_to_branch(branch, remote, self.manager.credentials)
         self.refresh_git_status()
-        self.manager.info_text_block.set_text(self.message)
         self.manager.root.stop_loading_popup()
 
 
-    def show_push_result(self):
-        if self.status != 0:
-            self.manager.root.show_error_popup('Unable to push to remote!', self.message)
-        else:
-            self.manager.root.show_message_popup('Pushed Successfully', self.message)
-        self.status = 0
+    def show_status(self):
+        self.show_command_result(self.message, self.status)
         self.message = ''
+        self.status = 0
 
 
     def create_new_branch(self):

@@ -250,3 +250,8 @@ def git_commit_changes(commit_message):
         command = 'git commit -m "{}"'.format(commit_message)
         name = "git_commit_changes"
         return handle_basic_command(command, name)
+
+def git_add_remote(remote_name, remote_url):
+    command = 'git remote add {} {}'.format(remote_name, remote_url)
+    name = 'git_add_remote'
+    return handle_basic_command(command, name)

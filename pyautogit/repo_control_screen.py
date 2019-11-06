@@ -18,6 +18,19 @@ class RepoControlManager:
         self.manager = top_manager
         self.message = ''
         self.status = 0
+        self.utility_var = None
+        self.menu_choices = ['Add Remote', 'Add All', 'Push Branch', 'Pull Branch']
+
+
+    def process_menu_selection(self, selection):
+        if selection == 'Add Remote':
+            self.ask_new_remote_name()
+        else:
+            self.manager.root.show_warning_popup('Warning - Not supported', 'This menu item has not yet been implemented.')
+
+
+    def show_menu(self):
+        self.manager.root.show_menu_popup('Full Control Menu', self.menu_choices, self.process_menu_selection)
 
     def refresh_git_status(self):
 
@@ -33,6 +46,25 @@ class RepoControlManager:
             self.manager.remotes_menu.selected_item = remote
         if len(self.manager.add_files_menu.get_item_list()) > selected_file:
             self.manager.add_files_menu.selected_item = selected_file
+
+
+    def add_remote(self, remote_url):
+        remote_name = self.utility_var
+        self.utility_var = None
+        out, err = pyautogit.commands.git_add_remote(remote_name, remote_url)
+        if err < 0:
+            self.manager.root.show_error_popup('Failed to add remote', out)
+        else:
+            self.manager.remotes_menu.clear()
+            self.refresh_git_status()
+
+    def ask_new_remote_url(self, remote_name):
+        self.utility_var = remote_name
+        self.manager.root.show_text_box_popup('Please enter the new remote url.', self.add_remote)
+
+    def ask_new_remote_name(self):
+        self.manager.root.show_text_box_popup('Please enter the new remote name.', self.ask_new_remote_url)
+
 
 
     def get_repo_status_short(self):
@@ -126,16 +158,24 @@ class RepoControlManager:
             self.manager.info_text_block.title = 'Git Diff - {}'.format(filename)
 
 
-    def open_editor(self):
+    def open_editor(self, file=None):
         if self.manager.default_editor is None:
             self.manager.root.show_error_popup('Error', 'No default editor specified.')
         else:
             current_path = os.getcwd()
+            if file is not None:
+                os.path.join(current_path, file)
             out, err = pyautogit.commands.open_default_editor(self.manager.default_editor, current_path)
             if err != 0:
                 self.manager.root.show_error_popup('Failed to open editor.', out)
             else:
                 self.manager.root.show_message_popup('Opened {}'.format(current_path), 'Opened {} editor in external window'.format(self.manager.default_editor))
+
+
+    def open_editor_file(self):
+        filename = self.manager.add_files_menu.get()[3:]
+        self.open_editor(file=filename)
+
 
     def add_all_changes(self):
         out, err = pyautogit.commands.git_add_all()

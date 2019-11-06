@@ -31,7 +31,7 @@ class RepoControlManager:
         elif selection == 'Pull Branch':
             self.pull_repo_branch()
         elif selection == 'Stash All':
-            self.stash_all_changes()
+            self.stash_all_changes_op()
         elif selection == 'About':
             self.manager.info_text_block.set_text(self.manager.get_logo_text + '\n' + self.manager.get_about_info)
         else:

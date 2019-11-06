@@ -190,6 +190,11 @@ def git_stash_all():
     name = 'git_stash_all'
     return handle_basic_command(command, name)
 
+def git_unstash_all():
+    command = 'git stash pop'
+    name = 'git_unstash_all'
+    return handle_basic_command(command, name)
+
 def git_stash_file(filename):
     command = 'git stash {}'.format(filename)
     name = 'git_stash_file'

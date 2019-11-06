@@ -19,7 +19,8 @@ class RepoControlManager:
         self.message = ''
         self.status = 0
         self.utility_var = None
-        self.menu_choices = ['Add Remote', 'Add All', 'Push Branch', 'Pull Branch', 'Stash All', 'About']
+        self.menu_choices = ['Add Remote', 'Add All', 'Push Branch', 'Pull Branch', 'Stash All', 'Stash Pop', 'About']
+
 
     def process_menu_selection(self, selection):
         if selection == 'Add Remote':
@@ -27,37 +28,43 @@ class RepoControlManager:
         elif selection == 'Add All':
             self.add_all_changes()
         elif selection == 'Push Branch':
-            self.push_repo_branch()
+            self.push_repo_branch_cred()
         elif selection == 'Pull Branch':
-            self.pull_repo_branch()
+            self.pull_repo_branch_cred()
         elif selection == 'Stash All':
             self.stash_all_changes_op()
+        elif selection == 'Stash Pop':
+            self.unstash_all_changes_op()
         elif selection == 'About':
             self.manager.info_text_block.set_text(self.manager.get_logo_text + '\n' + self.manager.get_about_info)
         else:
             self.manager.root.show_warning_popup('Warning - Not supported', 'This menu item has not yet been implemented.')
 
 
-    def show_command_result(self, out, err):
+    def show_command_result(self, out, err, show_on_success = True, command_name='Command', success_message='Success', error_message='Error'):
         show_in_box = False
         if len(out.splitlines()) > 1:
-            popup_message = "Check Info Box For Output"
+            popup_message = "Check Info Box For {} Output".format(command_name)
             show_in_box = True
         else:
             popup_message = out
         if err != 0:
-            self.manager.root.show_error_popup('Command Error', popup_message)
-        else:
-            self.manager.root.show_message_popup('Command Success', popup_message)
-        if show_in_box:
-            self.manager.info_text_block.title = 'Git Command Output'
+            self.manager.root.show_error_popup(error_message, popup_message)
+        elif show_on_success:
+            self.manager.root.show_message_popup(success_message, popup_message)
+        if err != 0 or show_on_success:
+            self.manager.info_text_block.title = '{} Output'.format(command_name)
             self.manager.info_text_block.set_text(out)
 
 
+    # TODO: Make this a lambda function
     def show_menu(self):
         self.manager.root.show_menu_popup('Full Control Menu', self.menu_choices, self.process_menu_selection)
 
+
     def refresh_git_status(self):
+        """Function that refreshes a git repository status
+        """
 
         remote = self.manager.remotes_menu.selected_item
         selected_file = self.manager.add_files_menu.selected_item
@@ -73,56 +80,32 @@ class RepoControlManager:
             self.manager.add_files_menu.selected_item = selected_file
 
 
-    def add_remote(self, remote_url):
-        remote_name = self.utility_var
-        self.utility_var = None
-        out, err = pyautogit.commands.git_add_remote(remote_name, remote_url)
-        if err < 0:
-            self.manager.root.show_error_popup('Failed to add remote', out)
-        else:
-            self.manager.remotes_menu.clear()
-            self.refresh_git_status()
-
-    def ask_new_remote_url(self, remote_name):
-        self.utility_var = remote_name
-        self.manager.root.show_text_box_popup('Please enter the new remote url.', self.add_remote)
-
-    def ask_new_remote_name(self):
-        self.manager.root.show_text_box_popup('Please enter the new remote name.', self.ask_new_remote_url)
-
-
 
     def get_repo_status_short(self):
         out, err = pyautogit.commands.git_status_short()
-        if err < 0:
-            self.manager.root.show_error_popup('Cannot get git status', out)
-        else:
-            self.manager.add_files_menu.clear()
-            self.manager.add_files_menu.add_item_list(out.splitlines())
+        self.show_command_result(out, err, show_on_success=False, command_name="Show Status", error_message="Failed to get status")
+        self.manager.add_files_menu.clear()
+        self.manager.add_files_menu.add_item_list(out.splitlines())
 
 
     def get_repo_remotes(self):
         out, err = pyautogit.commands.git_get_remotes()
-        if err < 0:
-            self.manager.root.show_error_popup('Cannot get git remotes', out)
-        else:
-            self.manager.remotes_menu.clear()
-            self.manager.remotes_menu.add_item_list(out.splitlines())
+        self.show_command_result(out, err, show_on_success=False, command_name="List Remotes", error_message='Cannot get git remotes')
+        self.manager.remotes_menu.clear()
+        self.manager.remotes_menu.add_item_list(out.splitlines())
 
 
     def get_repo_branches(self):
         out, err = pyautogit.commands.git_get_branches()
-        if err < 0:
-            self.manager.root.show_error_popup('Cannot get git branches', out)
-        else:
-            self.manager.branch_menu.clear()
-            self.manager.branch_menu.add_item_list(out.splitlines())
-            selected_branch = 0
-            for branch in self.manager.branch_menu.get_item_list():
-                if branch.startswith('*'):
-                    break
-                selected_branch = selected_branch + 1
-            self.manager.branch_menu.selected_item = selected_branch
+        self.show_command_result(out, err, show_on_success=False, command_name="List Branches", error_message='Cannot get git branches')
+        self.manager.branch_menu.clear()
+        self.manager.branch_menu.add_item_list(out.splitlines())
+        selected_branch = 0
+        for branch in self.manager.branch_menu.get_item_list():
+            if branch.startswith('*'):
+                break
+            selected_branch = selected_branch + 1
+        self.manager.branch_menu.selected_item = selected_branch
 
 
     def show_remote_info(self):
@@ -164,9 +147,19 @@ class RepoControlManager:
             self.manager.info_text_block.title = 'Git log'
 
 
+    def stash_all_changes_op(self):
+        self.manager.perform_long_operation('Stashing', self.stash_all_changes, lambda : self.show_status(name="Stash Changes", succ_message="Stashed changes", err_message="Failed to stash changes"))
+
     def stash_all_changes(self):
-        out, err = pyautogit.commands.git_stash_all()
-        self.show_command_result(out, err)
+        self.message, self.status = pyautogit.commands.git_stash_all()
+        self.refresh_git_status()
+        self.manager.root.stop_loading_popup()
+
+    def unstash_all_changes_op(self):
+        self.manager.perform_long_operation('Stashing', self.stash_all_changes, lambda : self.show_status(name="Pop stash", succ_message="Unstashed changes", err_message="Failed to unstash changes"))
+
+    def unstash_all_changes(self):
+        self.message, self.status = pyautogit.commands.git_unstash_all()
 
     def open_git_diff(self):
         out, err = pyautogit.commands.git_diff()
@@ -224,6 +217,23 @@ class RepoControlManager:
         else:
             self.refresh_git_status()
 
+    def add_remote(self, remote_url):
+
+        remote_name = self.utility_var
+        self.utility_var = None
+        out, err = pyautogit.commands.git_add_remote(remote_name, remote_url)
+        self.show_command_result(out, err, show_on_success=False, command_name="Add Remote", error_message="Failed to add remote")
+        self.manager.remotes_menu.clear()
+        self.refresh_git_status()
+
+
+    def ask_new_remote_url(self, remote_name):
+        self.utility_var = remote_name
+        self.manager.root.show_text_box_popup('Please enter the new remote url.', self.add_remote)
+
+    def ask_new_remote_name(self):
+        self.manager.root.show_text_box_popup('Please enter the new remote name.', self.ask_new_remote_url)
+
     def pull_repo_branch_cred(self):
         if not self.manager.were_credentials_entered():
             self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Pulling', self.pull_repo_branch, self.show_status))
@@ -267,8 +277,8 @@ class RepoControlManager:
         self.manager.root.stop_loading_popup()
 
 
-    def show_status(self):
-        self.show_command_result(self.message, self.status)
+    def show_status(self, name='Command', succ_message="Success", err_message = "Err"):
+        self.show_command_result(self.message, self.status, command_name=name, success_message=succ_message, error_message=err_message)
         self.message = ''
         self.status = 0
 

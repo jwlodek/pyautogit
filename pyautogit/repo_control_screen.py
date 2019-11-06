@@ -200,6 +200,7 @@ class RepoControlManager:
         remote = self.manager.remotes_menu.get()
         self.message, self.status = pyautogit.commands.git_push_to_branch(branch, remote, self.manager.credentials)
         self.refresh_git_status()
+        self.manager.info_text_block.set_text(self.message)
         self.manager.root.stop_loading_popup()
 
 

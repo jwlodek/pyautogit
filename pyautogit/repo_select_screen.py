@@ -60,6 +60,7 @@ class RepoSelectManager:
             self.manager.root.show_error_popup('Unable to clone repository!', out)
         else:
             self.manager.root.show_message_popup('Cloned new repository', out)
+        self.manager.git_status_box.set_text(out)
         self.manager.refresh_repos()
 
 

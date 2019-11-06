@@ -7,42 +7,37 @@ Created: 01-Oct-2019
 """
 
 import os
+from os import environ
 import re
 import shutil
+import stat
 from sys import platform
 from subprocess import Popen, PIPE
-
-if platform == "win32":
-    import wexpect as EXPECT
-else:
-    import pexpect as EXPECT
+import pyautogit.askpass as ASKPASS
 
 
 def remove_repo_tree(target):
     if os.path.exists(target) and os.path.isdir(target):
-        shutil.rmtree(target)
+        def del_rw(action, name, exc):
+            os.chmod(name, stat.S_IWRITE)
+            os.remove(name)
+        shutil.rmtree(target, onerror=del_rw)
 
 
 def handle_credential_command(command, credentials, target_location='.'):
-    out = '\n\n'
+    out = ''
     err = 0
-    try:
-        child = EXPECT.spawn(command)
-        child.expect('Username*')
-        child.sendline(credentials[0])
-        child.expect('Password*:*')
-        child.sendline(credentials[1])
-        child.wait()
-
-    # In the case that we weren't prompted for uname and pass, don't throw exception.
-    except EXPECT.exceptions.EOF:
-        pass
-    
-    for line in child:
-        out = out + '{}\n'.format(line.decode())
-        
-    child.close()
-    err = child.exitstatus
+    # This is a bit janky, but I'm not sure what I could do to make it better
+    askpass_dir = os.path.dirname(ASKPASS.__file__)
+    if platform == "win32":
+        askpass_script = "askpass_win.py"
+    else:
+        askpass_script = "askpass.py"
+    askpass_script_path = os.path.join(askpass_dir, askpass_script)
+    environ['GIT_ASKPASS'] = askpass_script_path
+    environ['GIT_USERNAME'] = credentials[0]
+    environ['GIT_PASSWORD'] = credentials[1]
+    out, err = handle_basic_command(command, command)
 
     return out, err
         

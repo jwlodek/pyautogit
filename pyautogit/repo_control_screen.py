@@ -36,7 +36,7 @@ class RepoControlManager:
         elif selection == 'Stash Pop':
             self.unstash_all_changes_op()
         elif selection == 'About':
-            self.manager.info_text_block.set_text(self.manager.get_logo_text + '\n' + self.manager.get_about_info)
+            self.manager.info_text_block.set_text(self.manager.get_about_info)
         else:
             self.manager.root.show_warning_popup('Warning - Not supported', 'This menu item has not yet been implemented.')
 

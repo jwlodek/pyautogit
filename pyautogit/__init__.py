@@ -47,7 +47,7 @@ class PyAutoGitManager:
         self.repos = find_repos_in_path(target_path)
 
         self.repo_select_widget_set = py_cui.widget_set.WidgetSet(5,4)
-        self.repo_select_widget_set.add_block_label(get_logo_text(), 0, 0, column_span=2)
+        self.repo_select_widget_set.add_block_label(self.get_logo_text(), 0, 0, column_span=2)
         self.repo_select_widget_set.add_label('v{} - https://github.com/jwlodek/pyautogit'.format(__version__), 0, 2, column_span=2)
         
         self.repo_menu = self.repo_select_widget_set.add_scroll_menu('Repositories in Workspace', 1, 2, row_span=2)
@@ -71,7 +71,7 @@ class PyAutoGitManager:
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_R_LOWER, self.refresh_repos)
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_C_LOWER, self.ask_credentials)
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_E_LOWER, self.ask_default_editor)
-        self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_A_LOWER, lambda : self.git_status_box.set_text(get_about_info()))
+        self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_A_LOWER, lambda : self.git_status_box.set_text(self.get_about_info()))
         self.repo_select_manager.update_status()
         self.root.apply_widget_set(self.repo_select_widget_set)
         
@@ -115,7 +115,7 @@ class PyAutoGitManager:
         self.info_text_block.add_text_color_rule('Copyright',   py_cui.CYAN_ON_BLACK,   'startswith')
         self.info_text_block.add_text_color_rule('@.*@',        py_cui.CYAN_ON_BLACK,   'contains', match_type='regex')
         #self.info_text_block.selectable = False
-        self.info_text_block.set_text(get_about_info())
+        self.info_text_block.set_text(self.get_about_info())
         
         self.new_branch_textbox = self.autogit_widget_set.add_text_box('New Branch', 8, 0, column_span=2)
         self.new_branch_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.create_new_branch)
@@ -237,6 +237,29 @@ class PyAutoGitManager:
             self.post_input_callback = callback
         self.root.show_text_box_popup(prompt, self.update_message)
 
+
+    def get_logo_text(self):
+        logo =         "         _    _ _______ ____   _____ _____ _______\n" 
+        logo = logo +  "    /\\  | |  | |__   __/ __ \\ / ____|_   _|__   __|\n"
+        logo = logo +  "   /  \\ | |  | |  | | | |  | | |  __  | |    | |   \n"
+        logo = logo +  "  / /\\ \\| |  | |  | | | |  | | | |_ | | |    | |   \n"
+        logo = logo +  " / ____ \\ |__| |  | | | |__| | |__| |_| |_   | |   \n"
+        logo = logo +  "/_/    \\_\\____/   |_|  \\____/ \\_____|_____|  |_|   \n"
+        return logo
+
+
+    def get_about_info(self):
+        about_info = self.get_logo_text()
+        about_info = about_info + '\n\n\nAuthor: Jakub Wlodek\n\nPython CUI git client: https://github.com/jwlodek/pyautogit\n\n\n'
+        about_info = about_info + 'Powered by the py_cui Python Command Line UI library:\n\n'
+        about_info = about_info + 'https://github.com/jwlodek/py_cui\n\n\n'
+        about_info = about_info + 'Documentation available here:\n\n'
+        about_info = about_info + 'pyautogit: https://jwlodek.github.io/pyautogit-docs\n'
+        about_info = about_info + 'py_cui:    https://jwlodek.github.io/py_cui-docs\n\n\n'
+        about_info = about_info + 'Star me on Github!\n\n'
+        about_info = about_info + 'Copyright (c) 2019 Jakub Wlodek'
+        return about_info
+
 # Helper pyautogit functions
 
 def find_repos_in_path(path):
@@ -310,30 +333,6 @@ def parse_args():
 
     return target_repo, input_type, credentials
 
-
-def get_logo_text():
-    logo =         "         _    _ _______ ____   _____ _____ _______\n" 
-    logo = logo +  "    /\\  | |  | |__   __/ __ \\ / ____|_   _|__   __|\n"
-    logo = logo +  "   /  \\ | |  | |  | | | |  | | |  __  | |    | |   \n"
-    logo = logo +  "  / /\\ \\| |  | |  | | | |  | | | |_ | | |    | |   \n"
-    logo = logo +  " / ____ \\ |__| |  | | | |__| | |__| |_| |_   | |   \n"
-    logo = logo +  "/_/    \\_\\____/   |_|  \\____/ \\_____|_____|  |_|   \n"
-    return logo
-
-
-def get_about_info():
-    about_info = get_logo_text()
-    about_info = about_info + '\n\n\nAuthor: Jakub Wlodek\n\nPython CUI git client: https://github.com/jwlodek/pyautogit\n\n\n'
-    about_info = about_info + 'Powered by the py_cui Python Command Line UI library:\n\n'
-    about_info = about_info + 'https://github.com/jwlodek/py_cui\n\n\n'
-    about_info = about_info + 'Documentation available here:\n\n'
-    about_info = about_info + 'pyautogit: https://jwlodek.github.io/pyautogit-docs\n'
-    about_info = about_info + 'py_cui:    https://jwlodek.github.io/py_cui-docs\n\n\n'
-    about_info = about_info + 'Star me on Github!\n\n'
-    about_info = about_info + 'Copyright (c) 2019 Jakub Wlodek'
-    return about_info
-
-    
 
 def main():
     """ Entry point for pyautogit. Parses arguments, and initializes the CUI """

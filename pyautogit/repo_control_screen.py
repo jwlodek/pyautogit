@@ -36,23 +36,25 @@ class RepoControlManager:
         elif selection == 'Stash Pop':
             self.unstash_all_changes_op()
         elif selection == 'About':
-            self.manager.info_text_block.set_text(self.manager.get_about_info)
+            self.manager.info_text_block.set_text(self.manager.get_about_info())
         else:
             self.manager.root.show_warning_popup('Warning - Not supported', 'This menu item has not yet been implemented.')
 
 
     def show_command_result(self, out, err, show_on_success = True, command_name='Command', success_message='Success', error_message='Error'):
         show_in_box = False
+        stripped_output = out.strip()
         if len(out.splitlines()) > 1:
+            self.manager.root.set_title('In here')
             popup_message = "Check Info Box For {} Output".format(command_name)
             show_in_box = True
         else:
-            popup_message = out
+            popup_message = stripped_output
         if err != 0:
             self.manager.root.show_error_popup(error_message, popup_message)
         elif show_on_success:
             self.manager.root.show_message_popup(success_message, popup_message)
-        if err != 0 or show_on_success:
+        if show_in_box and (err != 0 or show_on_success):
             self.manager.info_text_block.title = '{} Output'.format(command_name)
             self.manager.info_text_block.set_text(out)
 

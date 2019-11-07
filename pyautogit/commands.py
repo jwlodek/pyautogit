@@ -232,14 +232,8 @@ def git_pull_branch(branch, remote, credentials):
 
 
 def git_push_to_branch(branch, remote, credentials, repo_path='.'):
-    out = None
-    err = 0
     command = 'git push {} {}'.format(remote, branch)
-    out, err = handle_credential_command(command, credentials)
-    if err == 0:
-        out = "Pushed to branch successfully"
-
-    return out, err
+    return handle_credential_command(command, credentials)
 
 
 def open_default_editor(default_editor, path):

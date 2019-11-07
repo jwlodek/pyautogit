@@ -44,7 +44,7 @@ class RepoControlManager:
         self.message = ''
         self.status = 0
         self.utility_var = None
-        self.menu_choices = ['Push Branch', 'Pull Branch', 'Add Remote', 'Add All', 'Stash All', 'Stash Pop', 'About']
+        self.menu_choices = ['Re-Enter Credentials', 'Push Branch', 'Pull Branch', 'Add Remote', 'Add All', 'Stash All', 'Stash Pop', 'Open Repository in Editor', 'About']
 
 
     def process_menu_selection(self, selection):
@@ -62,6 +62,10 @@ class RepoControlManager:
             self.unstash_all_changes_op()
         elif selection == 'About':
             self.manager.info_text_block.set_text(self.manager.get_about_info())
+        elif selection == 'Open Repository in Editor':
+            self.open_editor()
+        elif selection == 'Re-Enter Credentials':
+            self.manager.ask_credentials()
         else:
             self.manager.root.show_warning_popup('Warning - Not supported', 'This menu item has not yet been implemented.')
 
@@ -309,6 +313,22 @@ class RepoControlManager:
         self.message = ''
         self.status = 0
 
+
+    def show_pull_result(self):
+        if self.status != 0:
+            self.manager.root.show_error_popup('Unable to pull from remote!', 'See error message in window')
+            error_text = ''
+            temp = self.message.splitlines()
+            for i in range(0, len(temp)):
+                error_text = error_text + '**    {}\n'.format(temp[i])
+            self.manager.info_text_block.set_text(error_text)
+        else:
+            branch = self.manager.branch_menu.get()[2:]
+            remote = self.manager.remotes_menu.get()
+            self.manager.root.show_message_popup('Pulled Successfully', 'Pulled from branch {} for remote {}'.format(branch, remote))
+            self.manager.info_text_block.set_text(self.message)
+        self.status = 0
+        self.message = ''
 
     def create_new_branch(self):
 

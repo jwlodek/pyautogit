@@ -118,6 +118,7 @@ class PyAutoGitManager:
         self.info_text_block.add_text_color_rule('commit',      py_cui.YELLOW_ON_BLACK, 'startswith')
         self.info_text_block.add_text_color_rule('Copyright',   py_cui.CYAN_ON_BLACK,   'startswith')
         self.info_text_block.add_text_color_rule('@.*@',        py_cui.CYAN_ON_BLACK,   'contains', match_type='regex')
+        self.info_text_block.add_text_color_rule('**    ',      py_cui.RED_ON_BLACK,    'startswith')
         #self.info_text_block.selectable = False
         self.info_text_block.set_text(self.get_about_info())
         

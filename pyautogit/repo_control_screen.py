@@ -13,13 +13,38 @@ import pyautogit
 import pyautogit.commands
 
 class RepoControlManager:
+    """Class responsible for managing functions for the repository control screen.
+
+    This class contains functions that are used by pyautogit for individual repository control.
+    It provides the interface between the CUI widgets for the repository control screen and
+    the pyautogit.commands module.
+
+    Attributes
+    ----------
+    manager : PyAutogitManager
+        The master PyAutogitManager object
+    message : str
+        A helper attribute for sending messages between functions
+    status : int
+        A helper attribute for sending status codes between functions
+    utility_var : obj
+        A helper attribute for sending objects between functions
+    menu_choices : list of str
+        A list of menu choices accessible from the repository control menu
+
+    Methods
+    -------
+    
+    """
 
     def __init__(self, top_manager):
+        """Constructor for the RepoControlManager class
+        """
         self.manager = top_manager
         self.message = ''
         self.status = 0
         self.utility_var = None
-        self.menu_choices = ['Add Remote', 'Add All', 'Push Branch', 'Pull Branch', 'Stash All', 'Stash Pop', 'About']
+        self.menu_choices = ['Push Branch', 'Pull Branch', 'Add Remote', 'Add All', 'Stash All', 'Stash Pop', 'About']
 
 
     def process_menu_selection(self, selection):

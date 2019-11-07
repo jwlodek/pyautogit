@@ -8,6 +8,7 @@ Created: 01-Oct-2019
 
 import argparse
 import getpass
+import json
 import os
 import subprocess
 import threading
@@ -33,12 +34,15 @@ class PyAutoGitManager:
         self.current_path = os.path.abspath(target_path)
         self.top_path = self.current_path
         self.current_state = current_state
+        self.metadata_manager = PyAutogitMetadataManager(self)
+        self.metadata_manager.read_metadata()
         #if current_state == 'repo':
         #    self.top_path = os.path.
         self.credentials = credentials
         self.post_input_callback = None
 
         self.default_editor = None
+        self.root.run_on_exit(self.metadata_manager.write_metadata())
         self.user_message = None
 
         self.operation_thread = None
@@ -259,6 +263,39 @@ class PyAutoGitManager:
         about_info = about_info + 'Star me on Github!\n\n'
         about_info = about_info + 'Copyright (c) 2019 Jakub Wlodek'
         return about_info
+
+
+class PyAutogitMetadataManager:
+
+    def __init__(self, manager):
+        self.manager = manager
+
+    def write_metadata(self):
+        settings_dir = os.path.join(self.manager.top_path, '.pyautogit')
+        settings_file = os.path.join(settings_dir, 'pyautogit_settings.json')
+        if not os.path.exists(settings_dir):
+            os.mkdir(settings_dir)
+        if os.path.exists(settings_file):
+            os.remove(settings_file)
+        metadata = {}
+        metadata['EDITOR'] = self.manager.default_editor
+        fp = open(settings_file, 'w')
+        json.dump(metadata, fp)
+        fp.close()
+
+    def apply_metadata(self, metadata):
+        if 'EDITOR' in metadata.keys():
+            self.manager.default_editor = metadata['EDITOR']
+    
+    def read_metadata(self):
+        settings_dir = os.path.join(self.manager.top_path, '.pyautogit')
+        settings_file = os.path.join(settings_dir, 'pyautogit_settings.json')
+        if os.path.exists(settings_file):
+            fp = open(settings_file, 'r')
+            metadata = json.load(fp)
+            fp.close()
+            self.apply_metadata(metadata)
+            
 
 # Helper pyautogit functions
 

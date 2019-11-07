@@ -1,3 +1,2 @@
 py_cui
-pexpect
 pytest

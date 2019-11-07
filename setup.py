@@ -3,10 +3,6 @@ from sys import platform
 
 #required_packages = ['py_cui']
 required_packages = []
-if platform == "win32":
-    required_packages.append('wexpect')
-else:
-    required_packages.append('pexpect')
 
 
 setup(

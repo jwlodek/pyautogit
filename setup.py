@@ -1,9 +1,18 @@
 from setuptools import setup, find_packages
 from sys import platform
+from setuptools.command.install import install
+import os
 
 #required_packages = ['py_cui']
 required_packages = []
 
+
+class InstallLibrary(install):
+    def run(self):
+        install.run(self)
+        for fn in self.get_outputs():
+            if 'askpass' in fn and fn.endswith('.py'):
+                os.chmod(fn, 0o777)
 
 setup(
     name="pyautogit",
@@ -16,6 +25,7 @@ setup(
     url="https://github.com/jwlodek/pyautogit",
     #long_description=read("README.md"),
     #long_description_content_type='text/markdown',
+    cmdclass={'install':InstallLibrary},
     packages = find_packages(exclude=['tests', 'docs']),
     extras_require={
         'test': ['pytest'],

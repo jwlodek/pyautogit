@@ -33,11 +33,12 @@ class PyAutoGitManager:
 
         self.current_path = os.path.abspath(target_path)
         self.top_path = self.current_path
+        if current_state == 'repo':
+            self.top_path = os.path.dirname(self.current_path)
+        
         self.current_state = current_state
         self.metadata_manager = PyAutogitMetadataManager(self)
         self.metadata_manager.read_metadata()
-        #if current_state == 'repo':
-        #    self.top_path = os.path.
         self.credentials = credentials
         self.post_input_callback = None
 
@@ -48,7 +49,7 @@ class PyAutoGitManager:
         self.operation_thread = None
 
         # Repository select screen widgets, key commands.
-        self.repos = find_repos_in_path(target_path)
+        self.repos = find_repos_in_path(self.top_path)
 
         self.repo_select_widget_set = py_cui.widget_set.WidgetSet(5,4)
         self.repo_select_widget_set.add_block_label(self.get_logo_text(), 0, 0, column_span=2)
@@ -77,7 +78,8 @@ class PyAutoGitManager:
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_E_LOWER, self.ask_default_editor)
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_A_LOWER, lambda : self.git_status_box.set_text(self.get_about_info()))
         self.repo_select_manager.update_status()
-        self.root.apply_widget_set(self.repo_select_widget_set)
+        if self.current_state == 'workspace':
+            self.root.apply_widget_set(self.repo_select_widget_set)
         
 
         # Repo Control window screen widgets, key commands.
@@ -99,7 +101,7 @@ class PyAutoGitManager:
         self.add_files_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.add_revert_file)
         self.add_files_menu.add_key_command(py_cui.keys.KEY_SPACE, self.repo_control_manager.open_git_diff_file)
         self.add_files_menu.add_key_command(py_cui.keys.KEY_E_LOWER, self.repo_control_manager.open_editor_file)
-        self.add_files_menu.help_text = 'Enter - git add, Space - see diff, Arrows - scroll, Esc - exit'
+        self.add_files_menu.set_focus_text('Enter - git add | Space - see diff | Arrows - scroll | Esc - exit')
 
         self.remotes_menu = self.autogit_widget_set.add_scroll_menu('Git Remotes', 2, 0, row_span=2, column_span=2)
         self.remotes_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.show_remote_info)
@@ -107,6 +109,7 @@ class PyAutoGitManager:
         self.branch_menu = self.autogit_widget_set.add_scroll_menu('Git Branches', 4, 0, row_span=2, column_span=2)
         self.branch_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.checkout_branch)
         self.branch_menu.add_key_command(py_cui.keys.KEY_SPACE, self.repo_control_manager.show_log)
+        self.branch_menu.set_focus_text('Enter - Checkout Branch | Space - Print Info | Arrows - Scroll | Esc - Exit')
 
         self.commits_menu = self.autogit_widget_set.add_scroll_menu('Recent Commits', 6, 0, row_span=2, column_span=2)
         self.commits_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.open_git_diff_file)
@@ -124,13 +127,22 @@ class PyAutoGitManager:
         
         self.new_branch_textbox = self.autogit_widget_set.add_text_box('New Branch', 8, 0, column_span=2)
         self.new_branch_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.create_new_branch)
+        self.new_branch_textbox.set_focus_text('Enter - Create new branch | Esc - Exit')
         
         self.commit_message_box = self.autogit_widget_set.add_text_box('Commit Message', 8, 2, column_span=6)
         self.commit_message_box.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.commit)
-        
+        self.commit_message_box.set_focus_text('Enter - Commit changes | Esc - Exit')
 
         self.autogit_widget_set.add_key_command(py_cui.keys.KEY_C_LOWER, lambda : self.root.move_focus(self.commit_message_box))
         self.autogit_widget_set.add_key_command(py_cui.keys.KEY_I_LOWER, lambda : self.info_text_block.set_text(get_about_info()))
+
+        if self.current_state == 'repo':
+            self.git_status_box.clear()
+            self.root.apply_widget_set(self.autogit_widget_set)
+            self.root.set_title('pyautogit v{} - {}'.format(__version__, os.path.dirname(os.getcwd())))
+            self.root.set_status_bar_text('Return - Bcksp | Full Menu - m | Refresh - r | Add all - a | Git log - l | Open Editor - e | Pull Branch - f | Push Branch - p')
+            self.repo_control_manager.refresh_git_status()
+
 
 
     def refresh_repos(self):
@@ -145,7 +157,7 @@ class PyAutoGitManager:
         self.root.apply_widget_set(self.autogit_widget_set)
         os.chdir(target)
         self.root.set_title('pyautogit v{} - {}'.format(__version__, target))
-        self.root.set_status_bar_text('Quit - q | Full Menu - m | Refresh - r | Add all - a | Git log - l | Open Editor - e | Pull Branch - f | Push Branch - p')
+        self.root.set_status_bar_text('Return - Bcksp | Full Menu - m | Refresh - r | Add all - a | Git log - l | Open Editor - e | Pull Branch - f | Push Branch - p')
         self.repo_control_manager.refresh_git_status()
 
 
@@ -225,6 +237,7 @@ class PyAutoGitManager:
     def update_default_editor(self, editor):
         self.default_editor = editor
         self.root.show_message_popup('Default Editor Changed', '{} editor will be used to open directories'.format(editor))
+        self.repo_select_manager.update_status()
 
     def ask_default_editor(self):
         self.root.show_text_box_popup('Please enter a default editor command. (Ex. code, emacs)', self.update_default_editor)
@@ -354,7 +367,6 @@ def parse_args():
     credentials = []
 
     parser = argparse.ArgumentParser(description="A command line interface for git commands.")
-    parser.add_argument('-t', '--targetdir', help='Target git repository or workspace directory.')
     parser.add_argument('-c', '--credentials', action='store_true', help='Allows user to enter credentials once when pyautogit is started.')
     args = vars(parser.parse_args())
     if args['credentials']:
@@ -362,9 +374,6 @@ def parse_args():
         credentials.append(user)
         passwd = getpass.getpass(prompt="Please enter your github/gitlab password > ")
         credentials.append(passwd)
-    if args['targetdir'] is not None:
-        if os.path.exists(target_repo) and os.path.isdir(args['targetdir']):
-            target_repo = args['targetdir']
 
     if not is_git_repo(target_repo):
         input_type = 'workspace'

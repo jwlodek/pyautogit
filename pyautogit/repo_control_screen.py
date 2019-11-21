@@ -74,7 +74,6 @@ class RepoControlManager:
         show_in_box = False
         stripped_output = out.strip()
         if len(out.splitlines()) > 1:
-            self.manager.root.set_title('In here')
             popup_message = "Check Info Box For {} Output".format(command_name)
             show_in_box = True
         else:
@@ -179,7 +178,7 @@ class RepoControlManager:
 
 
     def stash_all_changes_op(self):
-        self.manager.perform_long_operation('Stashing', self.stash_all_changes, lambda : self.show_status(name="Stash Changes", succ_message="Stashed changes", err_message="Failed to stash changes"))
+        self.manager.perform_long_operation('Stashing', self.stash_all_changes, lambda : self.show_status_long_op(name="Stash Changes", succ_message="Stashed changes", err_message="Failed to stash changes"))
 
     def stash_all_changes(self):
         self.message, self.status = pyautogit.commands.git_stash_all()
@@ -187,7 +186,7 @@ class RepoControlManager:
         self.manager.root.stop_loading_popup()
 
     def unstash_all_changes_op(self):
-        self.manager.perform_long_operation('Stashing', self.stash_all_changes, lambda : self.show_status(name="Pop stash", succ_message="Unstashed changes", err_message="Failed to unstash changes"))
+        self.manager.perform_long_operation('Stashing', self.stash_all_changes, lambda : self.show_status_long_op(name="Pop stash", succ_message="Unstashed changes", err_message="Failed to unstash changes"))
 
     def unstash_all_changes(self):
         self.message, self.status = pyautogit.commands.git_unstash_all()
@@ -267,9 +266,9 @@ class RepoControlManager:
 
     def pull_repo_branch_cred(self):
         if not self.manager.were_credentials_entered():
-            self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Pulling', self.pull_repo_branch, self.show_status))
+            self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Pulling', self.pull_repo_branch, self.show_status_long_op))
         else:
-            self.manager.perform_long_operation('Pulling', self.pull_repo_branch, self.show_status)
+            self.manager.perform_long_operation('Pulling', self.pull_repo_branch, self.show_status_long_op)
 
 
     def pull_repo_branch(self):
@@ -295,9 +294,9 @@ class RepoControlManager:
 
     def push_repo_branch_cred(self):
         if not self.manager.were_credentials_entered():
-            self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Pushing', self.push_repo_branch, self.show_status))
+            self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Pushing', self.push_repo_branch, self.show_status_long_op))
         else:
-            self.manager.perform_long_operation('Pushing', self.push_repo_branch, self.show_status)
+            self.manager.perform_long_operation('Pushing', self.push_repo_branch, self.show_status_long_op)
 
 
     def push_repo_branch(self):
@@ -308,7 +307,7 @@ class RepoControlManager:
         self.manager.root.stop_loading_popup()
 
 
-    def show_status(self, name='Command', succ_message="Success", err_message = "Err"):
+    def show_status_long_op(self, name='Command', succ_message="Success", err_message = "Err"):
         self.show_command_result(self.message, self.status, command_name=name, success_message=succ_message, error_message=err_message)
         self.message = ''
         self.status = 0

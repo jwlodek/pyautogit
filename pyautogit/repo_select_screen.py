@@ -24,12 +24,16 @@ class RepoSelectManager:
 
 
     def update_status(self):
-        status_message = 'Current workspace directory:\n{}\n\n'.format(self.manager.top_path)
-        status_message = status_message + 'Current repos loaded in workspace: {}\n'.format(len(self.manager.repos))
+        status_message = 'Current directory:\n{}\n\n'.format(self.manager.top_path)
+        status_message = status_message + '# of Repos: {}\n\n'.format(len(self.manager.repos))
         if len(self.manager.credentials) == 0:
-            status_message = status_message + 'Git Remote Credentials Not Entered'
+            status_message = status_message + 'Credentials Not Entered\n'
         else:
-            status_messge = status_message + 'Git Remote Credentials Entered'
+            status_message = status_message + 'Credentials Entered\n'
+        if self.manager.default_editor is not None:
+            status_messge = status_message + '\nEditor: {}'.format(self.manager.default_editor)
+        else:
+            status_message = status_message + '\nNo Editor Specified.'
         self.manager.current_status_box.set_text(status_message)
 
 

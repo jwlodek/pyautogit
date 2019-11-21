@@ -76,12 +76,18 @@ def handle_basic_command(command, name, remove_quotes=True):
 
 
 def handle_open_external_program_command(command, name):
-    out = None
-    err = 0
     run_command = command.split(' ')
     try:
         proc = Popen(run_command, stdout=PIPE, stderr=PIPE)
-        out = "Opened external program"
+        out, err_messg = proc.communicate()
+        err = proc.returncode
+        if err != 0:
+            out = err_messg.decode()
+        else:
+            out = out.decode()
+    except FileNotFoundError:
+        out = "Program: {} could not be found in system path".format(command.split(' ')[0])
+        err = -1
     except:
         out = "Unknown error processing function: {}".format(name)
         err = -1

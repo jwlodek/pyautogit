@@ -321,11 +321,13 @@ class RepoControlManager:
         branch = self.manager.branch_menu.get()[2:]
         remote = self.manager.remotes_menu.get()
         self.message, self.status = pyautogit.commands.git_push_to_branch(branch, remote, self.manager.credentials)
+        if self.status == 0:
+            self.message = 'Pushed {} to {} successfully.'.format(branch, remote)
         self.refresh_git_status()
         self.manager.root.stop_loading_popup()
 
 
-    def show_status_long_op(self, name='Command', succ_message="Success", err_message = "Err"):
+    def show_status_long_op(self, name='Command', succ_message="Success", err_message = "Error"):
         self.show_command_result(self.message, self.status, command_name=name, success_message=succ_message, error_message=err_message)
         self.message = ''
         self.status = 0

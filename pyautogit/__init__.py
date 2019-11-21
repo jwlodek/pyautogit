@@ -55,7 +55,9 @@ class PyAutoGitManager:
         self.repos = find_repos_in_path(self.top_path)
 
         self.repo_select_widget_set = py_cui.widget_set.WidgetSet(5,4)
-        self.repo_select_widget_set.add_block_label(self.get_logo_text(), 0, 0, column_span=2, center=False)
+        logo_label = self.repo_select_widget_set.add_block_label(self.get_logo_text(), 0, 0, column_span=2, center=False)
+        logo_label.set_standard_color(py_cui.MAGENTA_ON_BLACK)
+
         link_label = self.repo_select_widget_set.add_label('v{} - https://github.com/jwlodek/pyautogit'.format(__version__), 0, 2, column_span=2)
         link_label.add_text_color_rule('https://.*', py_cui.CYAN_ON_BLACK, 'contains', match_type='regex')
         
@@ -67,7 +69,7 @@ class PyAutoGitManager:
 
         self.git_status_box = self.repo_select_widget_set.add_text_block('Git Repo Status', 1, 0, row_span=4, column_span=2)
         self.git_status_box.is_selectable = False
-        self.git_status_box.add_text_color_rule('Welcome', py_cui.RED_ON_BLACK, 'startswith', match_type='line')
+        self.git_status_box.add_text_color_rule('Welcome', py_cui.GREEN_ON_BLACK, 'startswith', match_type='line')
         
         self.current_status_box = self.repo_select_widget_set.add_text_block('Current Status', 1, 3, row_span=2)
         self.current_status_box.is_selectable = False

@@ -304,7 +304,7 @@ class RepoControlManager:
         out, err = pyautogit.commands.git_commit_changes(commit_message)
         self.show_command_result(out, err, command_name='Commit', success_message='Commit Succeeded',error_message='Commit Failed')
         self.refresh_git_status()
-        self.show_log()
+        #self.show_log()
         self.manager.commit_message_box.clear()
 
 

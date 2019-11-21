@@ -26,7 +26,7 @@ __version__='0.0.1'
 
 class PyAutoGitManager:
 
-    def __init__(self, root, target_path, current_state, credentials):
+    def __init__(self, root, target_path, current_state, save_metadata, credentials):
 
         self.root = root
         self.repo_select_manager = RepoSelect.RepoSelectManager(self)
@@ -44,7 +44,9 @@ class PyAutoGitManager:
         self.credentials = credentials
         self.post_input_callback = None
 
-        self.root.run_on_exit(self.metadata_manager.write_metadata)
+        if save_metadata:
+            self.root.run_on_exit(self.metadata_manager.write_metadata)
+
         self.user_message = None
 
         self.operation_thread = None
@@ -403,12 +405,12 @@ def parse_args():
     """
 
     target_repo = '.'
-    input_type = 'repo'
     credentials = []
 
     parser = argparse.ArgumentParser(description="A command line interface for git commands.")
     parser.add_argument('-c', '--credentials', action='store_true', help='Allows user to enter credentials once when pyautogit is started.')
     parser.add_argument('-w', '--workspace', help='Pass a path to this argument to start pyautogit in a workspace not the current directory.')
+    parser.add_argument('-n', '--nosavemetadata', action='store_true', help='Add this flag if you would like pyautogit to not save metadata between sessions.')
     args = vars(parser.parse_args())
     if args['credentials']:
         user = input('Please enter your github/gitlab username > ')
@@ -427,21 +429,20 @@ def parse_args():
             exit()
             
 
-    if not is_git_repo(target_repo):
-        input_type = 'workspace'
-
-    return target_repo, input_type, credentials
+    return target_repo, not args['nosavemetadata'], credentials
 
 
 def main():
     """Entry point for pyautogit. Parses arguments, and initializes the CUI
     """
 
-    
+    target, save_metadata, credentials = parse_args()
 
-    target, in_type, credentials = parse_args()
+    input_type = 'repo'
+    if not is_git_repo(target):
+        input_type = 'workspace'
 
     root = py_cui.PyCUI(5, 4)
-    manager = PyAutoGitManager(root, target, in_type, credentials)
+    manager = PyAutoGitManager(root, target, input_type, save_metadata, credentials)
 
     root.start()

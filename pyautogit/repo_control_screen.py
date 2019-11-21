@@ -8,6 +8,7 @@ Created: 01-Oct-2019
 """
 
 import os
+from sys import platform
 import py_cui
 import pyautogit
 import pyautogit.commands
@@ -44,7 +45,16 @@ class RepoControlManager:
         self.message = ''
         self.status = 0
         self.utility_var = None
-        self.menu_choices = ['Re-Enter Credentials', 'Push Branch', 'Pull Branch', 'Add Remote', 'Add All', 'Stash All', 'Stash Pop', 'Open Repository in Editor', 'About']
+        self.menu_choices = ['Re-Enter Credentials', 
+                                'Push Branch', 
+                                'Pull Branch', 
+                                'Add Remote', 
+                                'Add All', 
+                                'Stash All', 
+                                'Stash Pop', 
+                                'Open Repository in Editor', 
+                                'Enter Custom Command', 
+                                'About']
 
 
     def process_menu_selection(self, selection):
@@ -66,6 +76,8 @@ class RepoControlManager:
             self.open_editor()
         elif selection == 'Re-Enter Credentials':
             self.manager.ask_credentials()
+        elif selection == 'Enter Custom Command':
+            self.ask_custom_command()
         else:
             self.manager.root.show_warning_popup('Warning - Not supported', 'This menu item has not yet been implemented.')
 
@@ -98,6 +110,17 @@ class RepoControlManager:
     def show_menu(self):
         self.manager.root.show_menu_popup('Full Control Menu', self.menu_choices, self.process_menu_selection)
 
+
+    def handle_user_command(self, command):
+        out, err = pyautogit.commands.handle_custom_command(command)
+        self.show_command_result(out, err, command_name=command)
+        self.refresh_git_status()
+
+    def ask_custom_command(self):
+        shell='Bash'
+        if platform == 'win32':
+            shell='Batch'
+        self.manager.root.show_text_box_popup('Please Enter A {} Command:'.format(shell), self.handle_user_command)
 
     def refresh_git_status(self):
         """Function that refreshes a git repository status

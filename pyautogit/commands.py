@@ -94,6 +94,11 @@ def handle_open_external_program_command(command, name):
     return out, err
 
 
+def handle_custom_command(command):
+    name = command
+    return handle_basic_command(command, name)
+
+
 def git_status_short(repo_path='.'):
 
     command = "git -C {} status -s".format(repo_path)

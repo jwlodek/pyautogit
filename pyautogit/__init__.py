@@ -107,6 +107,7 @@ class PyAutoGitManager:
         self.autogit_widget_set.add_key_command(py_cui.keys.KEY_E_LOWER, self.repo_control_manager.open_editor)
         self.autogit_widget_set.add_key_command(py_cui.keys.KEY_F_LOWER, self.repo_control_manager.pull_repo_branch_cred)
         self.autogit_widget_set.add_key_command(py_cui.keys.KEY_P_LOWER, self.repo_control_manager.push_repo_branch_cred)
+        self.autogit_widget_set.add_key_command(py_cui.keys.KEY_C_UPPER, self.repo_control_manager.ask_custom_command)
 
         self.add_files_menu = self.autogit_widget_set.add_scroll_menu('Add Files', 0, 0, row_span=2, column_span=2)
         self.add_files_menu.add_text_color_rule(' ', py_cui.RED_ON_BLACK,   'startswith',       match_type='region', region=[0,3], include_whitespace=True)
@@ -156,7 +157,7 @@ class PyAutoGitManager:
             self.info_text_block.set_text(self.get_about_info())
             self.root.apply_widget_set(self.autogit_widget_set)
             self.root.set_title('pyautogit v{} - {}'.format(__version__, os.path.basename(os.getcwd())))
-            self.root.set_status_bar_text('Return - Bcksp | Full Menu - m | Refresh - r | Add all - a | Git log - l | Open Editor - e | Pull Branch - f | Push Branch - p')
+            self.root.set_status_bar_text('Return - Bcksp | Full Menu - m | Refresh - r | Add all - a | Git log - l | Open Editor - e | Pull Branch - f | Push Branch - p | Command - C')
             self.repo_control_manager.refresh_git_status()
 
 

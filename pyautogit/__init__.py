@@ -10,6 +10,7 @@ import argparse
 import getpass
 import json
 import os
+import shutil
 import subprocess
 import threading
 from subprocess import Popen, PIPE
@@ -37,13 +38,13 @@ class PyAutoGitManager:
             self.top_path = os.path.dirname(self.current_path)
         
         self.current_state = current_state
+        self.default_editor = None
         self.metadata_manager = PyAutogitMetadataManager(self)
         self.metadata_manager.read_metadata()
         self.credentials = credentials
         self.post_input_callback = None
 
-        self.default_editor = None
-        self.root.run_on_exit(self.metadata_manager.write_metadata())
+        self.root.run_on_exit(self.metadata_manager.write_metadata)
         self.user_message = None
 
         self.operation_thread = None
@@ -52,8 +53,9 @@ class PyAutoGitManager:
         self.repos = find_repos_in_path(self.top_path)
 
         self.repo_select_widget_set = py_cui.widget_set.WidgetSet(5,4)
-        self.repo_select_widget_set.add_block_label(self.get_logo_text(), 0, 0, column_span=2)
-        self.repo_select_widget_set.add_label('v{} - https://github.com/jwlodek/pyautogit'.format(__version__), 0, 2, column_span=2)
+        self.repo_select_widget_set.add_block_label(self.get_logo_text(), 0, 0, column_span=2, center=False)
+        link_label = self.repo_select_widget_set.add_label('v{} - https://github.com/jwlodek/pyautogit'.format(__version__), 0, 2, column_span=2)
+        link_label.add_text_color_rule('https://.*', py_cui.CYAN_ON_BLACK, 'contains', match_type='regex')
         
         self.repo_menu = self.repo_select_widget_set.add_scroll_menu('Repositories in Workspace', 1, 2, row_span=2)
         self.repo_menu.add_item_list(self.repos)
@@ -63,6 +65,7 @@ class PyAutoGitManager:
 
         self.git_status_box = self.repo_select_widget_set.add_text_block('Git Repo Status', 1, 0, row_span=4, column_span=2)
         self.git_status_box.is_selectable = False
+        self.git_status_box.add_text_color_rule('Welcome', py_cui.RED_ON_BLACK, 'startswith', match_type='line')
         
         self.current_status_box = self.repo_select_widget_set.add_text_block('Current Status', 1, 3, row_span=2)
         self.current_status_box.is_selectable = False
@@ -79,6 +82,13 @@ class PyAutoGitManager:
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_A_LOWER, lambda : self.git_status_box.set_text(self.get_about_info()))
         self.repo_select_manager.update_status()
         if self.current_state == 'workspace':
+            if self.metadata_manager.first_time:
+                self.git_status_box.set_text(self.get_welcome_message())
+                self.metadata_manager.first_time = False
+            else:
+                self.git_status_box.set_text(self.get_about_info(with_logo = False))
+            self.root.set_title('pyautogit v{} - Repository Selection'.format(__version__))
+            self.root.set_status_bar_text('Quit - q | Full Menu - m | Refresh - r | Update Credentials - c')
             self.root.apply_widget_set(self.repo_select_widget_set)
         
 
@@ -105,6 +115,7 @@ class PyAutoGitManager:
 
         self.remotes_menu = self.autogit_widget_set.add_scroll_menu('Git Remotes', 2, 0, row_span=2, column_span=2)
         self.remotes_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.show_remote_info)
+        self.remotes_menu.set_focus_text('Enter - Show Remote Info | Esc - Exit')
 
         self.branch_menu = self.autogit_widget_set.add_scroll_menu('Git Branches', 4, 0, row_span=2, column_span=2)
         self.branch_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.checkout_branch)
@@ -112,8 +123,9 @@ class PyAutoGitManager:
         self.branch_menu.set_focus_text('Enter - Checkout Branch | Space - Print Info | Arrows - Scroll | Esc - Exit')
 
         self.commits_menu = self.autogit_widget_set.add_scroll_menu('Recent Commits', 6, 0, row_span=2, column_span=2)
-        self.commits_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.open_git_diff_file)
+        self.commits_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.show_commit_info)
         self.commits_menu.add_text_color_rule(' ', py_cui.GREEN_ON_BLACK, 'notstartswith', match_type='region', region=[0,7], include_whitespace=True)
+        self.commits_menu.set_focus_text('Enter - Show commit info | Space - Checkout commit | Esc - Exit')
 
         self.info_text_block = self.autogit_widget_set.add_text_block('Git Info', 0, 2, row_span=8, column_span=6)
         self.info_text_block.add_text_color_rule('+',           py_cui.GREEN_ON_BLACK,  'startswith')
@@ -123,7 +135,6 @@ class PyAutoGitManager:
         self.info_text_block.add_text_color_rule('@.*@',        py_cui.CYAN_ON_BLACK,   'contains', match_type='regex')
         self.info_text_block.add_text_color_rule('**    ',      py_cui.RED_ON_BLACK,    'startswith')
         #self.info_text_block.selectable = False
-        self.info_text_block.set_text(self.get_about_info())
         
         self.new_branch_textbox = self.autogit_widget_set.add_text_box('New Branch', 8, 0, column_span=2)
         self.new_branch_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.create_new_branch)
@@ -138,8 +149,9 @@ class PyAutoGitManager:
 
         if self.current_state == 'repo':
             self.git_status_box.clear()
+            self.info_text_block.set_text(self.get_about_info())
             self.root.apply_widget_set(self.autogit_widget_set)
-            self.root.set_title('pyautogit v{} - {}'.format(__version__, os.path.dirname(os.getcwd())))
+            self.root.set_title('pyautogit v{} - {}'.format(__version__, os.path.basename(os.getcwd())))
             self.root.set_status_bar_text('Return - Bcksp | Full Menu - m | Refresh - r | Add all - a | Git log - l | Open Editor - e | Pull Branch - f | Push Branch - p')
             self.repo_control_manager.refresh_git_status()
 
@@ -154,6 +166,7 @@ class PyAutoGitManager:
     def open_autogit_window(self):
         target = self.repo_menu.get()
         self.git_status_box.clear()
+        self.info_text_block.set_text(self.get_about_info())
         self.root.apply_widget_set(self.autogit_widget_set)
         os.chdir(target)
         self.root.set_title('pyautogit v{} - {}'.format(__version__, target))
@@ -169,6 +182,11 @@ class PyAutoGitManager:
         self.add_files_menu.clear()
         self.remotes_menu.clear()
         self.new_branch_textbox.clear()
+        if self.metadata_manager.first_time:
+            self.git_status_box.set_text(self.get_welcome_message())
+            self.metadata_manager.first_time = False
+        else:
+            self.git_status_box.set_text(self.get_about_info(with_logo = False))
         self.root.apply_widget_set(self.repo_select_widget_set)
         os.chdir('..')
         self.root.set_title('pyautogit v{} - Repository Selection'.format(__version__))
@@ -190,6 +208,7 @@ class PyAutoGitManager:
         """
 
         self.credentials.append(passwd)
+        self.repo_select_manager.update_status()
         if self.post_input_callback is not None:
             self.post_input_callback()
         self.post_input_callback = None
@@ -266,9 +285,12 @@ class PyAutoGitManager:
         return logo
 
 
-    def get_about_info(self):
-        about_info = self.get_logo_text()
-        about_info = about_info + '\n\n\nAuthor: Jakub Wlodek\n\nPython CUI git client: https://github.com/jwlodek/pyautogit\n\n\n'
+    def get_about_info(self, with_logo=True):
+        if with_logo:
+            about_info = self.get_logo_text() + '\n\n\n'
+        else:
+            about_info = '\n'
+        about_info = about_info + 'Author: Jakub Wlodek\n\nPython CUI git client: https://github.com/jwlodek/pyautogit\n\n\n'
         about_info = about_info + 'Powered by the py_cui Python Command Line UI library:\n\n'
         about_info = about_info + 'https://github.com/jwlodek/py_cui\n\n\n'
         about_info = about_info + 'Documentation available here:\n\n'
@@ -279,10 +301,22 @@ class PyAutoGitManager:
         return about_info
 
 
+    def get_welcome_message(self):
+        welcome = '\nWelcome to pyautogit!\n\nThis is a command line interface for working with git projects.\n'
+        welcome = welcome + '\nTo begin, take a look at the repositories list to the right.\nThis shows all detected '
+        welcome = welcome + 'repositories in the workspace.\nYou may create new repositories, or clone them also to the right.\n'
+        welcome = welcome + '\nFor pushing, pulling, and cloning, you will need to enter credentials.\nDo this by pressing "c".\n'
+        welcome = welcome + '\nAlso, to set a default editor (that can open files and dirs),\npress "e".\n'
+        welcome = welcome + '\nIf you encounter issues, please make a ticket on the github page,\nand if you enjoy pyautogit,'
+        welcome = welcome + 'feel free to give\nit a star or a sponsorship.\n\nIf you would like to contribute, feel free to do so as well!'
+        return welcome
+
+
 class PyAutogitMetadataManager:
 
     def __init__(self, manager):
         self.manager = manager
+        self.first_time = False
 
     def write_metadata(self):
         settings_dir = os.path.join(self.manager.top_path, '.pyautogit')
@@ -293,6 +327,7 @@ class PyAutogitMetadataManager:
             os.remove(settings_file)
         metadata = {}
         metadata['EDITOR'] = self.manager.default_editor
+        metadata['VERSION'] = __version__
         fp = open(settings_file, 'w')
         json.dump(metadata, fp)
         fp.close()
@@ -305,10 +340,16 @@ class PyAutogitMetadataManager:
         settings_dir = os.path.join(self.manager.top_path, '.pyautogit')
         settings_file = os.path.join(settings_dir, 'pyautogit_settings.json')
         if os.path.exists(settings_file):
-            fp = open(settings_file, 'r')
-            metadata = json.load(fp)
-            fp.close()
-            self.apply_metadata(metadata)
+            try:
+                fp = open(settings_file, 'r')
+                metadata = json.load(fp)
+                fp.close()
+                self.apply_metadata(metadata)
+            except json.decoder.JSONDecodeError:
+                shutil.rmtree(settings_dir)
+                self.first_time = True
+        else:
+            self.first_time = True
             
 
 # Helper pyautogit functions
@@ -361,19 +402,30 @@ def parse_args():
     """Function that parses user arguments for pyautogit
     """
 
-
     target_repo = '.'
     input_type = 'repo'
     credentials = []
 
     parser = argparse.ArgumentParser(description="A command line interface for git commands.")
     parser.add_argument('-c', '--credentials', action='store_true', help='Allows user to enter credentials once when pyautogit is started.')
+    parser.add_argument('-w', '--workspace', help='Pass a path to this argument to start pyautogit in a workspace not the current directory.')
     args = vars(parser.parse_args())
     if args['credentials']:
         user = input('Please enter your github/gitlab username > ')
         credentials.append(user)
         passwd = getpass.getpass(prompt="Please enter your github/gitlab password > ")
         credentials.append(passwd)
+    if args['workspace'] is not None:
+        if os.path.exists(args['workspace']):
+            if os.path.isdir(args['workspace']):
+                os.chdir(args['workspace'])
+            else:
+                print('Path {} is not a directory.'.format(args['workspace']))
+                exit()
+        else:
+            print('Path {} does not exist.'.format(args['workspace']))
+            exit()
+            
 
     if not is_git_repo(target_repo):
         input_type = 'workspace'
@@ -382,7 +434,10 @@ def parse_args():
 
 
 def main():
-    """ Entry point for pyautogit. Parses arguments, and initializes the CUI """
+    """Entry point for pyautogit. Parses arguments, and initializes the CUI
+    """
+
+    
 
     target, in_type, credentials = parse_args()
 

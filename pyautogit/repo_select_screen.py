@@ -31,7 +31,7 @@ class RepoSelectManager:
         else:
             status_message = status_message + 'Credentials Entered\n'
         if self.manager.default_editor is not None:
-            status_messge = status_message + '\nEditor: {}'.format(self.manager.default_editor)
+            status_message = status_message + '\nEditor: {}'.format(self.manager.default_editor)
         else:
             status_message = status_message + '\nNo Editor Specified.'
         self.manager.current_status_box.set_text(status_message)
@@ -43,7 +43,7 @@ class RepoSelectManager:
         self.manager.git_status_box.clear()
         out, err = pyautogit.commands.git_status(repo_name)
         if err != 0:
-            self.manager.root.show_error_popup('Unable to get git status!', message)
+            self.manager.root.show_error_popup('Unable to get git status!', out)
         self.manager.git_status_box.title = 'Git Repo Status - {}'.format(repo_name)
         self.manager.git_status_box.set_text('\n{}'.format(out))
         self.manager.refresh_repos()

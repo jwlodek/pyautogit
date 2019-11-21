@@ -118,6 +118,11 @@ def git_get_remote_info(remote):
     name='git_get_remote_info'
     return handle_basic_command(command, name)
 
+def git_get_commit_info(commit_hash):
+    command = 'git show {}'.format(commit_hash)
+    name = 'git_get_commit_info'
+    return handle_basic_command(command, name)
+
 
 def git_get_branches():
     command = "git branch"

@@ -83,8 +83,15 @@ class RepoControlManager:
         elif show_on_success:
             self.manager.root.show_message_popup(success_message, popup_message)
         if show_in_box and (err != 0 or show_on_success):
+            box_out = out
+            if err != 0:
+                err_out = '\n'
+                temp = out.splitlines()
+                for line in temp:
+                    err_out = err_out + '- ' + line + '\n'
+                box_out = err_out
             self.manager.info_text_block.title = '{} Output'.format(command_name)
-            self.manager.info_text_block.set_text(out)
+            self.manager.info_text_block.set_text(box_out)
 
 
     # TODO: Make this a lambda function
@@ -149,6 +156,19 @@ class RepoControlManager:
             self.manager.info_text_block.clear()
             self.manager.info_text_block.set_text(out)
             self.manager.info_text_block.title = '{} remote info'.format(remote)
+
+
+    def show_commit_info(self):
+        if self.manager.commits_menu.get() is None:
+            return
+        commit_hash = self.manager.commits_menu.get().split(' ')[0]
+        out, err = pyautogit.commands.git_get_commit_info(commit_hash)
+        if err != 0:
+            self.manager.root.show_error_popup('Failed to generate commit info', out)
+        else:
+            self.manager.info_text_block.clear()
+            self.manager.info_text_block.set_text(out)
+            self.manager.info_text_block.title = 'Commit info for {}'.format(commit_hash)
 
 
     def get_recent_commits(self):
@@ -216,7 +236,7 @@ class RepoControlManager:
         else:
             current_path = os.getcwd()
             if file is not None:
-                os.path.join(current_path, file)
+                current_path = os.path.join(current_path, file)
             out, err = pyautogit.commands.open_default_editor(self.manager.default_editor, current_path)
             if err != 0:
                 self.manager.root.show_error_popup('Failed to open editor.', out)
@@ -282,12 +302,9 @@ class RepoControlManager:
     def commit(self):
         commit_message = self.manager.commit_message_box.get()
         out, err = pyautogit.commands.git_commit_changes(commit_message)
-        if err != 0:
-            self.manager.root.show_error_popup('Commit failed!', out)
-        else:
-            self.manager.root.show_message_popup('Success', 'Committed: {}'.format(commit_message))
-            self.refresh_git_status()
-            self.show_log()
+        self.show_command_result(out, err, show_on_success=False, command_name='Commit', success_message='Commit Succeeded',error_message='Commit Failed')
+        self.refresh_git_status()
+        self.show_log()
         self.manager.commit_message_box.clear()
 
 
@@ -313,22 +330,6 @@ class RepoControlManager:
         self.status = 0
 
 
-    def show_pull_result(self):
-        if self.status != 0:
-            self.manager.root.show_error_popup('Unable to pull from remote!', 'See error message in window')
-            error_text = ''
-            temp = self.message.splitlines()
-            for i in range(0, len(temp)):
-                error_text = error_text + '**    {}\n'.format(temp[i])
-            self.manager.info_text_block.set_text(error_text)
-        else:
-            branch = self.manager.branch_menu.get()[2:]
-            remote = self.manager.remotes_menu.get()
-            self.manager.root.show_message_popup('Pulled Successfully', 'Pulled from branch {} for remote {}'.format(branch, remote))
-            self.manager.info_text_block.set_text(self.message)
-        self.status = 0
-        self.message = ''
-
     def create_new_branch(self):
 
         new_branch_name = self.manager.new_branch_textbox.get()
@@ -342,14 +343,12 @@ class RepoControlManager:
             self.manager.new_branch_textbox.clear()
             self.refresh_git_status()
 
+
     def checkout_branch(self):
         branch = self.manager.branch_menu.get()
         if branch is not None:
             branch = branch[2:]
             out, err = pyautogit.commands.git_checkout_branch(branch)
-            if err != 0:
-                self.manager.root.show_error_popup('Failed to checkout branch', out)
-            else:
-                self.manager.root.show_message_popup('Checkout Successful', 'Checked out branch {}'.format(branch))
+            self.show_command_result(out, err, command_name='Branch Checkout', success_message='Checked Out Branch {}'.format(branch), error_message='Failed To Checkout Branch')
             self.refresh_git_status()
 

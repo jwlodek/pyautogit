@@ -1,5 +1,5 @@
-"""
-File containing functions used by the repository specific CUI screen.
+"""File containing functions used by the repository specific CUI screen.
+
 This file is meant to handle the intermediate considerations between the 
 CUI and the underlying git commands found in pyautogit.commands
 
@@ -12,8 +12,9 @@ from sys import platform
 import py_cui
 import pyautogit
 import pyautogit.commands
+import pyautogit.screen_manager as SM
 
-class RepoControlManager:
+class RepoControlManager(SM.ScreenManager):
     """Class responsible for managing functions for the repository control screen.
 
     This class contains functions that are used by pyautogit for individual repository control.
@@ -41,17 +42,18 @@ class RepoControlManager:
     def __init__(self, top_manager):
         """Constructor for the RepoControlManager class
         """
-        self.manager = top_manager
-        self.message = ''
-        self.status = 0
-        self.utility_var = None
-        self.menu_choices = ['Re-Enter Credentials', 
+
+        super().__init__(top_manager)
+        self.menu_choices = ['(Re)Enter Credentials', 
                                 'Push Branch', 
                                 'Pull Branch', 
                                 'Add Remote', 
                                 'Add All', 
                                 'Stash All', 
                                 'Stash Pop', 
+                                'Create Tag',
+                                'Synchronize Tags',
+                                'Checkout Version',
                                 'Open Repository in Editor', 
                                 'Enter Custom Command', 
                                 'About']
@@ -70,6 +72,10 @@ class RepoControlManager:
             self.stash_all_changes_op()
         elif selection == 'Stash Pop':
             self.unstash_all_changes_op()
+        elif selection == 'Create Tag':
+            self.manager.ask_message('Please enter your new git tag', callback=self.create_new_tag)
+        elif selection == 'Checkout Version':
+            self.show_version_selection_screen()
         elif selection == 'About':
             self.manager.info_text_block.set_text(self.manager.get_about_info())
         elif selection == 'Open Repository in Editor':
@@ -80,48 +86,6 @@ class RepoControlManager:
             self.ask_custom_command()
         else:
             self.manager.open_not_supported_popup(selection)
-
-
-    def show_command_result(self, out, err, show_on_success = True, command_name='Command', success_message='Success', error_message='Error'):
-        show_in_box = False
-        stripped_output = out.strip()
-        if len(out.splitlines()) > 1:
-            popup_message = "Check Info Box For {} Output".format(command_name)
-            show_in_box = True
-        else:
-            popup_message = stripped_output
-        if err != 0:
-            self.manager.root.show_error_popup(error_message, popup_message)
-        elif show_on_success:
-            self.manager.root.show_message_popup(success_message, popup_message)
-        if show_in_box and (err != 0 or show_on_success):
-            box_out = out
-            if err != 0:
-                err_out = '\n'
-                temp = out.splitlines()
-                for line in temp:
-                    err_out = err_out + '- ' + line + '\n'
-                box_out = err_out
-            self.manager.info_text_block.title = '{} Output'.format(command_name)
-            self.manager.info_text_block.set_text(box_out)
-
-
-    # TODO: Make this a lambda function
-    def show_menu(self):
-        self.manager.root.show_menu_popup('Full Control Menu', self.menu_choices, self.process_menu_selection)
-
-
-    def handle_user_command(self, command):
-        out, err = pyautogit.commands.handle_custom_command(command)
-        self.show_command_result(out, err, command_name=command)
-        self.refresh_git_status()
-
-
-    def ask_custom_command(self):
-        shell='Bash'
-        if platform == 'win32':
-            shell='Batch'
-        self.manager.root.show_text_box_popup('Please Enter A {} Command:'.format(shell), self.handle_user_command)
 
 
     def refresh_git_status(self):
@@ -209,6 +173,12 @@ class RepoControlManager:
             self.manager.commits_menu.add_item_list(out.splitlines())
 
 
+    def create_new_tag(self):
+        new_tag_name = self.manager.user_message
+        out, err = pyautogit.commands.git_create_tag(new_tag_name)
+        self.show_command_result(out, err, command_name='Create Tag', success_message='Tag {} Created'.format(new_tag_name), error_message='Failed to Create Tag')
+        self.show_log()
+
 
     def show_log(self):
         if self.manager.branch_menu.get() is None:
@@ -292,7 +262,40 @@ class RepoControlManager:
         else:
             self.refresh_git_status()
 
+
+    #-----------------------------------#
+    #               REMOTES             #
+    #-----------------------------------#
+
+
+    def ask_new_remote_name(self):
+        """Opens text box to enter new remote name
+        """
+
+        self.manager.root.show_text_box_popup('Please enter the new remote name.', self.ask_new_remote_url)
+
+
+    def ask_new_remote_url(self, remote_name):
+        """Opens text box to ask new remote url
+
+        Parameters
+        ----------
+        remote_name : str
+            Remote name entered in previous textbox
+        """
+
+        self.utility_var = remote_name
+        self.manager.root.show_text_box_popup('Please enter the new remote url.', self.add_remote)
+
+
     def add_remote(self, remote_url):
+        """Adds remote to git repo
+
+        Parameters
+        ----------
+        remote_url : str
+            URL entered by user
+        """
 
         remote_name = self.utility_var
         self.utility_var = None
@@ -302,26 +305,27 @@ class RepoControlManager:
         self.refresh_git_status()
 
 
-    def ask_new_remote_url(self, remote_name):
-        self.utility_var = remote_name
-        self.manager.root.show_text_box_popup('Please enter the new remote url.', self.add_remote)
+    def delete_remote(self):
+        """Deletes selected remote from local repo
+        """
 
-    def ask_new_remote_name(self):
-        self.manager.root.show_text_box_popup('Please enter the new remote name.', self.ask_new_remote_url)
-
-    def pull_repo_branch_cred(self):
-        if not self.manager.were_credentials_entered():
-            self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Pulling', self.pull_repo_branch, self.show_status_long_op))
-        else:
-            self.manager.perform_long_operation('Pulling', self.pull_repo_branch, self.show_status_long_op)
-
-
-    def pull_repo_branch(self):
-        branch = self.manager.branch_menu.get()[2:]
         remote = self.manager.remotes_menu.get()
-        self.message, self.status = pyautogit.commands.git_pull_branch(branch, remote, self.manager.credentials)
+        out, err = pyautogit.commands.git_remove_remote(remote)
+        self.show_command_result(out, err, show_on_success=False, command_name="Remove Remote", error_message="Failed to remove remote")
+        self.manager.remotes_menu.clear()
         self.refresh_git_status()
-        self.manager.root.stop_loading_popup()
+
+
+    def rename_remote(self):
+        """Renames selected remote from local repo
+        """
+
+        new_name = self.manager.user_message
+        remote = self.manager.remotes_menu.get()
+        out, err = pyautogit.commands.git_rename_remote(remote, new_name)
+        self.show_command_result(out, err, show_on_success=False, command_name="Rename Remote", error_message="Failed to rename remote")
+        self.manager.remotes_menu.clear()
+        self.refresh_git_status()
 
 
     def commit(self):
@@ -335,13 +339,13 @@ class RepoControlManager:
 
 
 
-    def push_repo_branch_cred(self):
-        if not self.manager.were_credentials_entered():
-            self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Pushing', self.push_repo_branch, self.show_status_long_op))
-        else:
-            self.manager.perform_long_operation('Pushing', self.push_repo_branch, self.show_status_long_op)
-
-
+    def pull_repo_branch(self):
+        branch = self.manager.branch_menu.get()[2:]
+        remote = self.manager.remotes_menu.get()
+        self.message, self.status = pyautogit.commands.git_pull_branch(branch, remote, self.manager.credentials)
+        self.refresh_git_status()
+        self.manager.root.stop_loading_popup()
+    
     def push_repo_branch(self):
         branch = self.manager.branch_menu.get()[2:]
         remote = self.manager.remotes_menu.get()
@@ -351,11 +355,6 @@ class RepoControlManager:
         self.refresh_git_status()
         self.manager.root.stop_loading_popup()
 
-
-    def show_status_long_op(self, name='Command', succ_message="Success", err_message = "Error"):
-        self.show_command_result(self.message, self.status, command_name=name, success_message=succ_message, error_message=err_message)
-        self.message = ''
-        self.status = 0
 
 
     def create_new_branch(self):
@@ -380,3 +379,11 @@ class RepoControlManager:
             self.show_command_result(out, err, command_name='Branch Checkout', success_message='Checked Out Branch {}'.format(branch), error_message='Failed To Checkout Branch')
             self.refresh_git_status()
 
+
+    def checkout_commit(self):
+        commit = self.manager.commits_menu.get()
+        if commit is not None:
+            commit_hash = commit.split(' ')[0]
+            out, err = pyautogit.commands.git_checkout_commit(commit_hash)
+            self.show_command_result(out, err, command_name='Commit Checkout', success_message='Checked Out Commit {}'.format(commit_hash), error_message='Failed To Checout Commit')
+            self.refresh_git_status()

@@ -4,12 +4,14 @@
 import py_cui
 import pyautogit
 import pyautogit.commands
+import pyautogit.screen_manager as SM
 
 
-class RepoSelectManager:
+class RepoSelectManager(SM.ScreenManager):
 
     def __init__(self, top_manager):
-        self.manager = top_manager
+        
+        super().__init__(top_manager)
         self.menu_choices = ['(Re)Enter Credentials',
                                 'Open Directory',
                                 'Clone New Repository',
@@ -41,8 +43,25 @@ class RepoSelectManager:
             self.manager.open_not_supported_popup(selection)
 
 
-    def show_menu(self):
-        self.manager.root.show_menu_popup('Full Control Menu', self.menu_choices, self.process_menu_selection)
+    def refresh_git_status(self):
+        """Function that refreshes the repositories in the selection screen
+        """
+
+        self.manager.repos = pyautogit.find_repos_in_path(self.manager.top_path)
+        self.manager.repo_menu.clear()
+        self.manager.repo_menu.add_item_list(self.manager.repos)
+
+        status_message = 'Current directory:\n{}\n\n'.format(self.manager.top_path)
+        status_message = status_message + '# of Repos: {}\n\n'.format(len(self.manager.repos))
+        if len(self.manager.credentials) == 0:
+            status_message = status_message + 'Credentials Not Entered\n'
+        else:
+            status_message = status_message + 'Credentials Entered\n'
+        if self.manager.default_editor is not None:
+            status_message = status_message + '\nEditor: {}'.format(self.manager.default_editor)
+        else:
+            status_message = status_message + '\nNo Editor Specified.'
+        self.manager.current_status_box.set_text(status_message)
 
 
     def ask_delete_repo(self):
@@ -57,19 +76,6 @@ class RepoSelectManager:
             self.manager.repo_menu.remove_selected_item()
 
 
-    def update_status(self):
-        status_message = 'Current directory:\n{}\n\n'.format(self.manager.top_path)
-        status_message = status_message + '# of Repos: {}\n\n'.format(len(self.manager.repos))
-        if len(self.manager.credentials) == 0:
-            status_message = status_message + 'Credentials Not Entered\n'
-        else:
-            status_message = status_message + 'Credentials Entered\n'
-        if self.manager.default_editor is not None:
-            status_message = status_message + '\nEditor: {}'.format(self.manager.default_editor)
-        else:
-            status_message = status_message + '\nNo Editor Specified.'
-        self.manager.current_status_box.set_text(status_message)
-
 
     def show_repo_status(self):
         current_repo = self.manager.repo_menu.selected_item
@@ -80,7 +86,7 @@ class RepoSelectManager:
             self.manager.root.show_error_popup('Unable to get git status!', out)
         self.manager.git_status_box.title = 'Git Repo Status - {}'.format(repo_name)
         self.manager.git_status_box.set_text('\n{}'.format(out))
-        self.manager.refresh_repos()
+        self.refresh_git_status()
         self.manager.repo_menu.selected_item = current_repo
 
 
@@ -91,15 +97,18 @@ class RepoSelectManager:
             self.clone_new_repo()
 
 
+    def clone_new_repo_cred(self):
+        if not self.manager.were_credentials_entered():
+            self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Cloning', self.clone_new_repo, self.show_status_long_op))
+        else:
+            self.manager.perform_long_operation('Cloning', self.clone_new_repo, self.show_status_long_op)
+
+
     def clone_new_repo(self):
         new_repo_url = self.manager.clone_new_box.get()
-        out, err = pyautogit.commands.git_clone_new_repo(new_repo_url, self.manager.credentials)
-        if err != 0:
-            self.manager.root.show_error_popup('Unable to clone repository!', out)
-        else:
-            self.manager.root.show_message_popup('Cloned new repository', out)
-        self.manager.git_status_box.set_text(out)
-        self.manager.refresh_repos()
+        self.message, self.status = pyautogit.commands.git_clone_new_repo(new_repo_url, self.manager.credentials)
+        self.refresh_git_status()
+        self.manager.root.stop_loading_popup
 
 
     def create_new_repo(self):
@@ -110,8 +119,5 @@ class RepoSelectManager:
         else:
             self.manager.root.show_message_popup('Created new repository', out)
         self.manager.create_new_box.clear()
-        self.manager.refresh_repos()
-
-
-
+        self.refresh_git_status()
 

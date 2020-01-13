@@ -200,6 +200,11 @@ def git_checkout_branch(branchname):
     name = 'git_checkout_branch'
     return handle_basic_command(command, name)
 
+def git_checkout_commit(commit_hash):
+    command = 'git checkout {}'.format(commit_hash)
+    name = 'git_checkout_commit'
+    return handle_basic_command(command, name)
+
 
 def git_stash_all():
     command = 'git stash'
@@ -269,4 +274,20 @@ def git_commit_changes(commit_message):
 def git_add_remote(remote_name, remote_url):
     command = 'git remote add {} {}'.format(remote_name, remote_url)
     name = 'git_add_remote'
+    return handle_basic_command(command, name)
+
+def git_remove_remote(remote_name):
+    command = 'git remote rm {}'.format(remote_name)
+    name = 'git_remove_remote'
+    return handle_basic_command(command, name)
+
+def git_rename_remote(remote, new_name):
+    command = 'git remote rename {} {}'.format(remote, new_name)
+    name = 'git_rename_remote'
+    return handle_basic_command(command, name)
+
+
+def git_create_tag(tag_name):
+    command = 'git tag {}'.format(tag_name)
+    name = 'git_create_tag'
     return handle_basic_command(command, name)

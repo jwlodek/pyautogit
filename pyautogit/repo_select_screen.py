@@ -1,5 +1,4 @@
-"""
-File contains a screen for listing available repos in pyautogit workspace.
+"""Manager implementation for CUI screen for selecting different repositories.
 """
 
 import py_cui
@@ -11,10 +10,45 @@ class RepoSelectManager:
 
     def __init__(self, top_manager):
         self.manager = top_manager
+        self.menu_choices = ['(Re)Enter Credentials',
+                                'Open Directory',
+                                'Clone New Repository',
+                                'Create New Repository',
+                                'Select Text Editor',
+                                'Enter Custom Command',
+                                'Exit']
+
+
+    def process_menu_selection(self, selection):
+        if selection == '(Re)Enter Credentials':
+            self.manager.ask_credentials()
+        elif selection == 'Open Directory':
+            # This will be implemented once py_cui adds a filemanager popup.
+            self.manager.open_not_supported_popup(selection)
+            pass
+        elif selection == 'Clone New Repository':
+            self.manager.root.move_focus(self.manager.clone_new_box)
+        elif selection == 'Create New Repository':
+            self.manager.root.move_focus(self.manager.create_new_box)
+        elif selection == 'Select Text Editor':
+            self.manager.ask_default_editor()
+        elif selection == 'Enter Custom Command':
+            self.manager.open_not_supported_popup(selection)
+            pass
+        elif selection == 'Exit':
+            exit()
+        else:
+            self.manager.open_not_supported_popup(selection)
+
+
+    def show_menu(self):
+        self.manager.root.show_menu_popup('Full Control Menu', self.menu_choices, self.process_menu_selection)
+
 
     def ask_delete_repo(self):
         target = self.manager.repo_menu.get()
         self.manager.root.show_yes_no_popup("Are you sure you want to delete {}?".format(target), self.delete_repo)
+
 
     def delete_repo(self, to_delete):
         if to_delete:

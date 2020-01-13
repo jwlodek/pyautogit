@@ -82,6 +82,7 @@ class PyAutoGitManager:
         
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_R_LOWER, self.refresh_repos)
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_C_LOWER, self.ask_credentials)
+        self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_M_LOWER, self.repo_select_manager.show_menu)
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_E_LOWER, self.ask_default_editor)
         self.repo_select_widget_set.add_key_command(py_cui.keys.KEY_A_LOWER, lambda : self.git_status_box.set_text(self.get_about_info()))
         self.repo_select_manager.update_status()
@@ -161,6 +162,9 @@ class PyAutoGitManager:
             self.repo_control_manager.refresh_git_status()
 
 
+    def open_not_supported_popup(self, operation):
+        self.root.show_warning_popup('Warning - Not Supported', 'The {} operation is not yet supported.'.format(operation))
+
 
     def refresh_repos(self):
         self.repos = find_repos_in_path(self.top_path)
@@ -182,6 +186,7 @@ class PyAutoGitManager:
     def open_repo_select_window(self):
         self.commit_message_box.clear()
         self.info_text_block.clear()
+        self.info_text_block.title = 'Git Info'
         self.branch_menu.clear()
         self.commits_menu.clear()
         self.add_files_menu.clear()

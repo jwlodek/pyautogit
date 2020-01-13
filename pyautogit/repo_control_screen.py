@@ -79,7 +79,7 @@ class RepoControlManager:
         elif selection == 'Enter Custom Command':
             self.ask_custom_command()
         else:
-            self.manager.root.show_warning_popup('Warning - Not supported', 'This menu item has not yet been implemented.')
+            self.manager.open_not_supported_popup(selection)
 
 
     def show_command_result(self, out, err, show_on_success = True, command_name='Command', success_message='Success', error_message='Error'):
@@ -116,11 +116,13 @@ class RepoControlManager:
         self.show_command_result(out, err, command_name=command)
         self.refresh_git_status()
 
+
     def ask_custom_command(self):
         shell='Bash'
         if platform == 'win32':
             shell='Batch'
         self.manager.root.show_text_box_popup('Please Enter A {} Command:'.format(shell), self.handle_user_command)
+
 
     def refresh_git_status(self):
         """Function that refreshes a git repository status

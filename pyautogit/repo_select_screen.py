@@ -90,25 +90,12 @@ class RepoSelectManager(SM.ScreenManager):
         self.manager.repo_menu.selected_item = current_repo
 
 
-    def clone_new_repo_cred(self):
-        if not self.manager.were_credentials_entered():
-            self.manager.ask_credentials(callback=self.clone_new_repo)
-        else:
-            self.clone_new_repo()
-
-
-    def clone_new_repo_cred(self):
-        if not self.manager.were_credentials_entered():
-            self.manager.ask_credentials(callback=lambda : self.manager.perform_long_operation('Cloning', self.clone_new_repo, self.show_status_long_op))
-        else:
-            self.manager.perform_long_operation('Cloning', self.clone_new_repo, self.show_status_long_op)
-
 
     def clone_new_repo(self):
         new_repo_url = self.manager.clone_new_box.get()
         self.message, self.status = pyautogit.commands.git_clone_new_repo(new_repo_url, self.manager.credentials)
         self.refresh_git_status()
-        self.manager.root.stop_loading_popup
+        self.manager.root.stop_loading_popup()
 
 
     def create_new_repo(self):

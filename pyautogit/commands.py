@@ -136,7 +136,7 @@ def git_get_branches():
 
 
 def git_get_recent_commits(branch):
-    command = "git --no-pager log {} --oneline".format(branch)
+    command = 'git --no-pager log {} --oneline'.format(branch)
     name = "git_get_recent_commits"
     return handle_basic_command(command, name)
 

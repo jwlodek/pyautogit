@@ -150,7 +150,7 @@ class RepoControlManager(SM.ScreenManager):
     def show_commit_info(self):
         if self.manager.commits_menu.get() is None:
             return
-        commit_hash = self.manager.commits_menu.get().split(' ')[0]
+        commit_hash = self.manager.commits_menu.get().split(' ', 1)[0]
         out, err = pyautogit.commands.git_get_commit_info(commit_hash)
         if err != 0:
             self.manager.root.show_error_popup('Failed to generate commit info', out)
@@ -165,6 +165,8 @@ class RepoControlManager(SM.ScreenManager):
         if self.manager.branch_menu.get() is None:
             return
         branch = self.manager.branch_menu.get()[2:]
+        if branch.startswith('(HEAD'):
+            branch = branch.split(' ')[-1][:-1]
         out, err = pyautogit.commands.git_get_recent_commits(branch)
         if err < 0:
             self.manager.root.show_error_popup('Cannot get recent commits', out)
@@ -383,7 +385,7 @@ class RepoControlManager(SM.ScreenManager):
     def checkout_commit(self):
         commit = self.manager.commits_menu.get()
         if commit is not None:
-            commit_hash = commit.split(' ')[0]
+            commit_hash = commit.split(' ', 1)[0]
             out, err = pyautogit.commands.git_checkout_commit(commit_hash)
             self.show_command_result(out, err, command_name='Commit Checkout', success_message='Checked Out Commit {}'.format(commit_hash), error_message='Failed To Checout Commit')
             self.refresh_git_status()

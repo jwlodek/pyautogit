@@ -145,7 +145,7 @@ class PyAutogitManager:
         self.commits_menu = self.autogit_widget_set.add_scroll_menu('Recent Commits', 6, 0, row_span=2, column_span=2)
         self.commits_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.show_commit_info)
         self.commits_menu.add_key_command(py_cui.keys.KEY_SPACE, self.repo_control_manager.checkout_commit)
-        self.commits_menu.add_text_color_rule(' ', py_cui.GREEN_ON_BLACK, 'notstartswith', match_type='region', region=[0,7], include_whitespace=True)
+        self.commits_menu.add_text_color_rule('^.*? ', py_cui.GREEN_ON_BLACK, 'contains', match_type='regex', include_whitespace=True)
         self.commits_menu.set_focus_text('Enter - Show commit info | Space - Checkout commit | Esc - Return')
 
         self.info_text_block = self.autogit_widget_set.add_text_block('Git Info', 0, 2, row_span=8, column_span=6)
@@ -489,7 +489,8 @@ class PyAutogitMetadataManager:
         metadata : dict
             Metadata parsed from json to python dict.
         """
-
+        if metadata is None:
+            return
         if 'EDITOR' in metadata.keys():
             self.manager.default_editor = metadata['EDITOR']
         if 'VERSION' in metadata.keys() and metadata['VERSION'] != __version__:

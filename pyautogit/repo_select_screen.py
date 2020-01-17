@@ -4,10 +4,10 @@
 import py_cui
 import pyautogit
 import pyautogit.commands
-import pyautogit.screen_manager as SM
+import pyautogit.screen_manager
 
 
-class RepoSelectManager(SM.ScreenManager):
+class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
 
     def __init__(self, top_manager):
         
@@ -88,7 +88,6 @@ class RepoSelectManager(SM.ScreenManager):
         self.manager.git_status_box.set_text('\n{}'.format(out))
         self.refresh_git_status()
         self.manager.repo_menu.selected_item = current_repo
-
 
 
     def clone_new_repo(self):

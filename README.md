@@ -58,11 +58,4 @@ The workspace screen allows for managing multiple `git` repositories at once. Fr
 
 When an action is performed that requires credentials (ex. git push), `pyautogit` will ask for your git remote username and password. These are then stored as environment variables for the running process, and are used with `git askpass` to perform operations. As a result, if you open an editor after credentials are entered (ex. VSCode), and use the integrated terminal to process `git` commands, you will not have to enter credentials again. Credentials are stored only for the duration the window is open, and must be re-entered after each restart.
 
-
-### Contributing Authors
-
-This is a list of individuals that have contributed in some way to `pyautogit` development. If you make a pull request feel free to add your name here!
-
-* Jakub Wlodek (Creator, Maintainer)
-
 ### License

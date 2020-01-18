@@ -8,8 +8,34 @@ import pyautogit.screen_manager
 
 
 class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
+    """Class representing the manager for the repo select screen
+
+    Attributes
+    ----------
+    menu_choices : list of str
+        Overriden attribute from base class with expanded menu choices.
+
+    Methods
+    -------
+    process_menu_selection()
+        Override of base class, executes depending on menu selection
+    refresh_git_status()
+        Function that refreshes the repositories in the selection screen
+    ask_delete_repo()
+        Function that asks user for confirmation for repo deletion
+    delete_repo()
+        Function that deletes a repo
+    show_repo_status()
+        Function that displays git status info for current repo
+    clone_new_repo()
+        Function that clones new repo from given URL
+    create_new_repo()
+        Function that creates a new repo with a given name
+    """
 
     def __init__(self, top_manager):
+        """Constructor for repo select manager
+        """
         
         super().__init__(top_manager)
         self.menu_choices = ['(Re)Enter Credentials',
@@ -22,6 +48,15 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
 
 
     def process_menu_selection(self, selection):
+        """Override of base class, executes depending on menu selection
+
+
+        Parameters
+        ----------
+        selection : str
+            The user's menu selection
+        """
+
         if selection == '(Re)Enter Credentials':
             self.manager.ask_credentials()
         elif selection == 'Open Directory':
@@ -35,8 +70,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         elif selection == 'Select Text Editor':
             self.manager.ask_default_editor()
         elif selection == 'Enter Custom Command':
-            self.manager.open_not_supported_popup(selection)
-            pass
+            self.ask_custom_command()
         elif selection == 'Exit':
             exit()
         else:
@@ -65,19 +99,31 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
 
 
     def ask_delete_repo(self):
+        """Function that asks user for confirmation for repo deletion
+        """
         target = self.manager.repo_menu.get()
         self.manager.root.show_yes_no_popup("Are you sure you want to delete {}?".format(target), self.delete_repo)
 
 
     def delete_repo(self, to_delete):
+        """Function that deletes a repo
+
+        Parameters
+        ----------
+        to_delete : bool
+            User's response of request for confirmation of deletion
+        """
+
         if to_delete:
             target = self.manager.repo_menu.get()
             pyautogit.commands.remove_repo_tree(target)
-            self.manager.repo_menu.remove_selected_item()
-
+            self.refresh_git_status()
 
 
     def show_repo_status(self):
+        """Function that shows the current repository status
+        """
+
         current_repo = self.manager.repo_menu.selected_item
         repo_name = self.manager.repo_menu.get()
         self.manager.git_status_box.clear()
@@ -91,13 +137,20 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
 
 
     def clone_new_repo(self):
+        """Function that clones new repo from given URL
+        """
+
         new_repo_url = self.manager.clone_new_box.get()
         self.message, self.status = pyautogit.commands.git_clone_new_repo(new_repo_url, self.manager.credentials)
         self.refresh_git_status()
+        # Turn off loading popup
         self.manager.root.stop_loading_popup()
 
 
     def create_new_repo(self):
+        """Function that creates a new repo with a given name
+        """
+
         new_dir_target = self.manager.create_new_box.get()
         out, err = pyautogit.commands.git_init_new_repo(new_dir_target)
         if err != 0:

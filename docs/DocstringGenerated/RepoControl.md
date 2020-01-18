@@ -11,7 +11,7 @@ Created: 01-Oct-2019
 # RepoControlManager 
 
 ``` python 
- class RepoControlManager(SM.ScreenManager) 
+ class RepoControlManager(pyautogit.screen_manager.ScreenManager) 
 ```
 
 Class responsible for managing functions for the repository control screen.
@@ -22,11 +22,7 @@ the pyautogit.commands module.
 
 | Attributes    | Type             | Doc             |
 |:-------|:-----------------|:----------------|
-|     manager | PyAutogitManager |         The master PyAutogitManager object | 
-|     message | str |         A helper attribute for sending messages between functions | 
-|     status | int |         A helper attribute for sending status codes between functions | 
-|     utility_var | obj |         A helper attribute for sending objects between functions | 
-|     menu_choices | list of str |         A list of menu choices accessible from the repository control menu | 
+|     menu_choices | list of str |         Overriden list of menu choices accessible from the repository control menu | 
 
 
 --------- 
@@ -36,12 +32,35 @@ the pyautogit.commands module.
  
 | method    | Doc             |
 |:-------|:----------------|
-| process_menu_selection | Function that refreshes a git repository statu. | 
-| get_repo_status_short |  | 
+| process_menu_selection | Override of base class, executes based on user menu selectio. | 
+| refresh_git_status | Function that refreshes a git repository statu. | 
+| get_repo_status_short | Gets shorthand repository statu. | 
+| get_repo_remotes | Gets list of repository remote. | 
+| get_repo_branches | Gets list of repository branche. | 
+| show_remote_info | Gets info about remot. | 
+| show_commit_info | Gets info about a particular commi. | 
+| get_recent_commits | Gets list of recent commits to branc. | 
+| create_new_tag | Creates a new ta. | 
+| show_log | Displays the git lo. | 
+| stash_all_changes | Stashes all repo change. | 
+| unstash_all_changes | Pops the stas. | 
+| open_git_diff | Opens current git diff stat. | 
+| open_git_diff_file | Gets the diff for a selected fil. | 
+| open_editor | Opens an external editor if selecte. | 
+| open_editor_file | Opens an external editor for a selected fil. | 
+| add_all_changes | Adds all changes to stagin. | 
+| add_revert_file | Adds/Reverts single file from stagin. | 
+| ask_new_remote_name | Opens text box to enter new remote nam. | 
 | ask_new_remote_url | Opens text box to ask new remote ur. | 
 | add_remote | Adds remote to git rep. | 
 | delete_remote | Deletes selected remote from local rep. | 
 | rename_remote | Renames selected remote from local rep. | 
+| commit | Commits currently staged item. | 
+| pull_repo_branch | Pulls from remot. | 
+| push_repo_branch | Pushes to remot. | 
+| create_new_branch | Creates new branch for repositor. | 
+| checkout_branch | Checks out specified branc. | 
+| checkout_commit | Checks out specified commi. | 
  
  
 
@@ -49,6 +68,20 @@ the pyautogit.commands module.
 
 ``` python 
     process_menu_selection(selection) 
+```
+
+
+Override of base class, executes based on user menu selectio.
+
+| Parameters    | Type             | Doc             |
+|:-------|:-----------------|:----------------|
+|         selection | str |             User selection from menu | 
+
+
+### refresh_git_status
+
+``` python 
+    refresh_git_status() 
 ```
 
 
@@ -61,7 +94,151 @@ Function that refreshes a git repository statu.
 ```
 
 
+Gets shorthand repository statu.
 
+### get_repo_remotes
+
+``` python 
+    get_repo_remotes() 
+```
+
+
+Gets list of repository remote.
+
+### get_repo_branches
+
+``` python 
+    get_repo_branches() 
+```
+
+
+Gets list of repository branche.
+
+### show_remote_info
+
+``` python 
+    show_remote_info() 
+```
+
+
+Gets info about remot.
+
+### show_commit_info
+
+``` python 
+    show_commit_info() 
+```
+
+
+Gets info about a particular commi.
+
+### get_recent_commits
+
+``` python 
+    get_recent_commits() 
+```
+
+
+Gets list of recent commits to branc.
+
+### create_new_tag
+
+``` python 
+    create_new_tag() 
+```
+
+
+Creates a new ta.
+
+### show_log
+
+``` python 
+    show_log() 
+```
+
+
+Displays the git lo.
+
+### stash_all_changes
+
+``` python 
+    stash_all_changes() 
+```
+
+
+Stashes all repo change.
+
+### unstash_all_changes
+
+``` python 
+    unstash_all_changes() 
+```
+
+
+Pops the stas.
+
+### open_git_diff
+
+``` python 
+    open_git_diff() 
+```
+
+
+Opens current git diff stat.
+
+### open_git_diff_file
+
+``` python 
+    open_git_diff_file() 
+```
+
+
+Gets the diff for a selected fil.
+
+### open_editor
+
+``` python 
+    open_editor(file=None) 
+```
+
+
+Opens an external editor if selecte.
+
+### open_editor_file
+
+``` python 
+    open_editor_file() 
+```
+
+
+Opens an external editor for a selected fil.
+
+### add_all_changes
+
+``` python 
+    add_all_changes() 
+```
+
+
+Adds all changes to stagin.
+
+### add_revert_file
+
+``` python 
+    add_revert_file() 
+```
+
+
+Adds/Reverts single file from stagin.
+
+### ask_new_remote_name
+
+``` python 
+    ask_new_remote_name() 
+```
+
+
+Opens text box to enter new remote nam.
 
 ### ask_new_remote_url
 
@@ -108,3 +285,57 @@ Deletes selected remote from local rep.
 
 
 Renames selected remote from local rep.
+
+### commit
+
+``` python 
+    commit() 
+```
+
+
+Commits currently staged item.
+
+### pull_repo_branch
+
+``` python 
+    pull_repo_branch() 
+```
+
+
+Pulls from remot.
+
+### push_repo_branch
+
+``` python 
+    push_repo_branch() 
+```
+
+
+Pushes to remot.
+
+### create_new_branch
+
+``` python 
+    create_new_branch() 
+```
+
+
+Creates new branch for repositor.
+
+### checkout_branch
+
+``` python 
+    checkout_branch() 
+```
+
+
+Checks out specified branc.
+
+### checkout_commit
+
+``` python 
+    checkout_commit() 
+```
+
+
+Checks out specified commi.

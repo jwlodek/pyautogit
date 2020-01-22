@@ -504,6 +504,9 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
 
 
     def merge_branches(self):
+        """Merges selected branch into the currently checked out branch
+        """
+        
         merge_branch = self.manager.branch_menu.get()
         checkout_branch = None
         for branch in self.manager.branch_menu.get_item_list():

@@ -1,6 +1,10 @@
 """File containing class that acts as a parent class to all sub-screen managers
 """
 
+from sys import platform
+import pyautogit.commands
+
+
 class ScreenManager:
     """Main parent screen manager class.
 

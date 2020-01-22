@@ -65,7 +65,8 @@ class PyAutogitMetadataManager:
             self.manager.default_editor = metadata['EDITOR']
         if 'VERSION' in metadata.keys() and metadata['VERSION'] != pyautogit.__version__:
             self.manager.root.show_message_popup('PyAutogit Updated', 'Congratulations for updating to pyautogit {}! See patch notes on github.'.format(pyautogit.__version__))
-    
+
+
     def read_metadata(self):
         """Converts metadata json file to python dict
 

@@ -96,6 +96,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         self.menu_choices = ['(Re)Enter Credentials', 
                                 'Push Branch', 
                                 'Pull Branch', 
+                                'Merge With Branch',
                                 'Add Remote', 
                                 'Add All', 
                                 'Stash All', 
@@ -126,6 +127,8 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
             self.execute_long_operation('Pushing', self.push_repo_branch, credentials_required=True)
         elif selection == 'Pull Branch':
             self.execute_long_operation('Pulling', self.pull_repo_branch, credentials_required=True)
+        elif selection == 'Merge With Branch':
+            self.execute_long_operation('Merging', self.merge_branches, credentials_required=False)
         elif selection == 'Stash All':
             self.execute_long_operation('Stashing', self.stash_all_changes, credentials_required=False)
         elif selection == 'Stash Pop':
@@ -497,6 +500,24 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
             out, err = pyautogit.commands.git_checkout_branch(branch)
             self.show_command_result(out, err, command_name='Branch Checkout', success_message='Checked Out Branch {}'.format(branch), error_message='Failed To Checkout Branch')
             self.refresh_git_status()
+
+
+    def merge_branches(self):
+        merge_branch = self.manager.branch_menu.get()
+        checkout_branch = None
+        for branch in self.manager.branch_menu.get_item_list():
+            if branch.startswith('* '):
+                checkout_branch = branch
+        if merge_branch is None or checkout_branch is None:
+            self.manager.root.stop_loading_popup()
+            self.manager.root.show_error_popup('No branches', 'The current repo has no branches to merge!')
+        elif merge_branch[2:] == checkout_branch[2:]:
+            self.manager.root.stop_loading_popup()
+            self.manager.root.show_error_popup('Same branch', 'You cannot merge the same branch with itself!')
+        else:
+            self.message, self.status = pyautogit.commands.git_merge_branches(merge_branch)
+            self.refresh_git_status()
+        self.manager.stop_loading_popup()
 
 
     def checkout_commit(self):

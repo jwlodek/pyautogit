@@ -229,7 +229,8 @@ class PyAutogitManager:
         self.branch_menu = self.repo_control_widget_set.add_scroll_menu('Git Branches', 4, 0, row_span=2, column_span=2)
         self.branch_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.checkout_branch)
         self.branch_menu.add_key_command(py_cui.keys.KEY_SPACE, self.repo_control_manager.show_log)
-        self.branch_menu.set_focus_text('Enter - Checkout Branch | Space - Print Info | Arrows - Scroll | Esc - Return')
+        self.branch_menu.add_key_command(py_cui.keys.KEY_M_LOWER, lambda : self.repo_control_manager.execute_long_operation('Merging', self.repo_control_manager.merge_branches, credentials_required=False))
+        self.branch_menu.set_focus_text('Enter - Checkout Branch | Space - Print Info | M - Merge Branch | Arrows - Scroll | Esc - Return')
 
         self.commits_menu = self.repo_control_widget_set.add_scroll_menu('Recent Commits', 6, 0, row_span=2, column_span=2)
         self.commits_menu.add_key_command(py_cui.keys.KEY_ENTER, self.repo_control_manager.show_commit_info)

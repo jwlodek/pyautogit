@@ -128,7 +128,8 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         elif selection == 'Pull Branch':
             self.execute_long_operation('Pulling', self.pull_repo_branch, credentials_required=True)
         elif selection == 'Merge With Branch':
-            self.execute_long_operation('Merging', self.merge_branches, credentials_required=False)
+            #self.execute_long_operation('Merging', self.merge_branches, credentials_required=False)
+            self.merge_branches()
         elif selection == 'Stash All':
             self.execute_long_operation('Stashing', self.stash_all_changes, credentials_required=False)
         elif selection == 'Stash Pop':
@@ -517,7 +518,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         else:
             self.message, self.status = pyautogit.commands.git_merge_branches(merge_branch)
             self.refresh_git_status()
-        self.manager.stop_loading_popup()
+        self.manager.root.stop_loading_popup()
 
 
     def checkout_commit(self):

@@ -517,6 +517,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         elif merge_branch[2:] == checkout_branch[2:]:
             self.manager.root.show_error_popup('Same branch', 'You cannot merge the same branch with itself!')
         else:
+            merge_branch = merge_branch[2:]
             out, err = pyautogit.commands.git_merge_branches(merge_branch)
             self.refresh_git_status()
             self.show_command_result(out, err, command_name='Merging Branches', success_message='Merged With {}'.format(merge_branch), error_message='Failed to Merge Branch')

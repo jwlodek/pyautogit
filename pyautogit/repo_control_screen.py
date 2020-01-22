@@ -519,6 +519,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         else:
             out, err = pyautogit.commands.git_merge_branches(merge_branch)
             self.refresh_git_status()
+            self.show_command_result(out, err, command_name='Merging Branches', success_message='Merged With {}'.format(merge_branch), error_message='Failed to Merge Branch')
 
 
     def revert_merge(self):
@@ -538,5 +539,5 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         if commit is not None:
             commit_hash = commit.split(' ', 1)[0]
             out, err = pyautogit.commands.git_checkout_commit(commit_hash)
-            self.show_command_result(out, err, command_name='Commit Checkout', success_message='Checked Out Commit {}'.format(commit_hash), error_message='Failed To Checout Commit')
+            self.show_command_result(out, err, command_name='Commit Checkout', success_message='Checked Out Commit {}'.format(commit_hash), error_message='Failed To Checkout Commit')
             self.refresh_git_status()

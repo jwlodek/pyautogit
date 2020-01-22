@@ -4,6 +4,7 @@
 import os
 import json
 import pyautogit
+import pyautogit.logger as LOGGER
 
 class PyAutogitMetadataManager:
     """Helper class for managing inter-use metadata for pyautogit
@@ -37,7 +38,7 @@ class PyAutogitMetadataManager:
         """Writes metadata file with cached settings
         """
 
-        settings_dir = os.path.join(self.manager.top_path, '.pyautogit')
+        settings_dir = os.path.join(self.manager.workspace_path, '.pyautogit')
         settings_file = os.path.join(settings_dir, 'pyautogit_settings.json')
         if not os.path.exists(settings_dir):
             os.mkdir(settings_dir)
@@ -46,6 +47,8 @@ class PyAutogitMetadataManager:
         metadata = {}
         metadata['EDITOR'] = self.manager.default_editor
         metadata['VERSION'] = pyautogit.__version__
+        metadata['LOG_PATH'] = LOGGER._LOG_FILE_PATH
+        metadata['LOG_ENABLE'] = LOGGER._LOG_ENABLED
         fp = open(settings_file, 'w')
         json.dump(metadata, fp)
         fp.close()
@@ -65,6 +68,10 @@ class PyAutogitMetadataManager:
             self.manager.default_editor = metadata['EDITOR']
         if 'VERSION' in metadata.keys() and metadata['VERSION'] != pyautogit.__version__:
             self.manager.root.show_message_popup('PyAutogit Updated', 'Congratulations for updating to pyautogit {}! See patch notes on github.'.format(pyautogit.__version__))
+        if 'LOG_PATH' in metadata.keys() and metadata['LOG_PATH'] is not None:
+            LOGGER.set_log_file_path(metadata['LOG_PATH'])
+        if 'LOG_ENABLE' in metadata.keys() and metadata['LOG_ENABLE']:
+            LOGGER.toggle_logger()
 
 
     def read_metadata(self):
@@ -76,7 +83,7 @@ class PyAutogitMetadataManager:
             metadata dictionary
         """
 
-        settings_dir = os.path.join(self.manager.top_path, '.pyautogit')
+        settings_dir = os.path.join(self.manager.workspace_path, '.pyautogit')
         settings_file = os.path.join(settings_dir, 'pyautogit_settings.json')
         if os.path.exists(settings_file):
             try:

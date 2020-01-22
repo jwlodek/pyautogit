@@ -57,6 +57,13 @@ class ScreenManager:
         self.info_panel = None
 
 
+    def initialize_screen_elements(self):
+        """Function that must be overridden by subscreen. Creates py_cui_widgets, returns widget set object.
+        """
+
+        pass
+
+
     def process_menu_selection(self, selection):
         """Processes based on selection returned from the menu
 
@@ -138,8 +145,22 @@ class ScreenManager:
         self.status = 0
 
 
-    def refresh_git_status(self):
+    def refresh_status(self):
         """Function that is fired after each git operation. Implement in subclasses.
+        """
+
+        pass
+
+
+    def clear_elements(self):
+        """Function that clears entries from widgets for reuse
+        """
+
+        pass
+
+
+    def set_initial_values(self):
+        """Function that sets initial values for widgets in screen
         """
 
         pass

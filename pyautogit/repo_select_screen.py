@@ -5,6 +5,7 @@ import py_cui
 import pyautogit
 import pyautogit.commands
 import pyautogit.screen_manager
+import pyautogit.logger as LOGGER
 
 
 class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
@@ -72,6 +73,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         elif selection == 'Enter Custom Command':
             self.ask_custom_command()
         elif selection == 'Exit':
+            self.manager.close_cleanup()
             exit()
         else:
             self.manager.open_not_supported_popup(selection)
@@ -127,7 +129,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
             self.manger.metadata_manager.first_time = False
         else:
             self.git_status_box.set_text(self.manager.get_about_info(with_logo = False))
-        self.manager.root.set_status_bar_text('Quit - q | Full Menu - m | Refresh - r | Update Credentials - c')
+        self.manager.root.set_status_bar_text('Quit - q | Full Menu - m | Refresh - r | Update Credentials - c | Settings Menu - s')
 
 
     def refresh_status(self):

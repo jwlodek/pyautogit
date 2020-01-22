@@ -28,7 +28,6 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
         debug_log_label.toggle_border()
         self.debug_log_toggle = settings_widget_set.add_button('Toggle Logs', 2, 1, command=self.toggle_logging)
         self.debug_enter_path_button = settings_widget_set.add_button('Set Log File', 2, 2, command = self.ask_log_file_path)
-
         self.debug_log_status_label = settings_widget_set.add_label('OFF - {}'.format(LOGGER._LOG_FILE_PATH), 2, 3, column_span=3)
         self.debug_log_status_label.toggle_border()
 

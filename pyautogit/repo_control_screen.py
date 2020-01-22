@@ -13,6 +13,7 @@ import py_cui
 import pyautogit
 import pyautogit.commands
 import pyautogit.screen_manager
+import pyautogit.logger as LOGGER
 
 class RepoControlManager(pyautogit.screen_manager.ScreenManager):
     """Class responsible for managing functions for the repository control screen.
@@ -143,6 +144,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         elif selection == 'Enter Custom Command':
             self.ask_custom_command()
         elif selection == 'Exit':
+            self.manager.close_cleanup()
             exit()
         else:
             self.manager.open_not_supported_popup(selection)

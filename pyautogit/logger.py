@@ -1,15 +1,18 @@
 """Module containing logging classes and functions.
+
 The logger is controlled via a set of global variables set by the pyautogit client.
 """
 
 import os
 import datetime
 
-
+# Global var that stores path to logfile
 _LOG_FILE_PATH = None
 
+# Global var that stores whether or not logging is enabled
 _LOG_ENABLED = False
 
+# Global var that stores file pointer for log file
 _LOG_FILE_POINTER = None
 
 
@@ -30,23 +33,39 @@ def toggle_logging():
         if _LOG_FILE_PATH is not None and os.access(os.path.dirname(_LOG_FILE_PATH), os.W_OK):
             initialized = initialize_logger()
             _LOG_ENABLED = initialized
+        else:
+            return
                 
 
 def set_log_file_path(log_file_path):
+    """Sets the path to the log file
+
+    Parameters
+    ----------
+    log_file_path : str
+        Path to the log file
+    """
+
     global _LOG_FILE_PATH
     _LOG_FILE_PATH = log_file_path
 
+
 def initialize_logger():
     """Function for initializing log-file writing in addition to stdout output
+
+    Returns
+    -------
+    initialized : bool
+        True if log file opened, false otherwise
     """
 
     global _LOG_FILE_PATH
     global _LOG_FILE_POINTER
     if os.path.exists(_LOG_FILE_PATH):
-        if os.access(_LOG_FILE_PATH, os.W_OK):
-            _LOG_FILE_POINTER = open(_LOG_FILE_PATH, 'w+')
-            return True
-    return False
+        if not os.access(_LOG_FILE_PATH, os.W_OK):
+            return False
+    _LOG_FILE_POINTER = open(_LOG_FILE_PATH, 'w+')
+    return True
 
 
 def close_logger():
@@ -72,7 +91,8 @@ def write(text, no_timestamp=False):
     """
 
     global _LOG_FILE_POINTER
-    if _LOG_FILE_POINTER is not None:
+    global _LOG_ENABLED
+    if _LOG_ENABLED and _LOG_FILE_POINTER is not None:
 
         # remove timestamp if not in use
         if no_timestamp:

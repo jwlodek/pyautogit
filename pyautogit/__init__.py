@@ -129,6 +129,7 @@ class PyAutogitManager:
         self.repo_select_manager = RepoSelect.RepoSelectManager(self)
         self.repo_control_manager = RepoControl.RepoControlManager(self)
         self.settings_manager = Settings.SettingsScreen(self)
+        LOGGER.write('Created subscreen managers.')
 
         self.save_metadata = save_metadata
 
@@ -141,8 +142,12 @@ class PyAutogitManager:
         # Setup some helper objects and default information/variables
         self.current_state = current_state
         self.default_editor = None
+        
         self.metadata_manager = MetaManager.PyAutogitMetadataManager(self)
         self.loaded_metadata = self.metadata_manager.read_metadata()
+        LOGGER.write('Loaded metadata')
+        LOGGER.write(self.loaded_metadata)
+
         self.credentials = credentials
         self.post_input_callback = None
 
@@ -162,23 +167,15 @@ class PyAutogitManager:
         self.repo_select_widget_set = self.repo_select_manager.initialize_screen_elements()
         self.repo_control_widget_set = self.repo_control_manager.initialize_screen_elements()
         self.settings_widget_set = self.settings_manager.initialize_screen_elements()
+        LOGGER.write('Initialized CUI elements')
 
         # Open repo select screen in workspace view
         if self.current_state == 'workspace':
-            self.repo_control_manager.clear_elements()
-            self.repo_select_manager.set_initial_values()
-            self.metadata_manager.apply_metadata(self.loaded_metadata)
-            self.root.set_title('pyautogit v{} - Repository Selection'.format(__version__))
-            self.root.apply_widget_set(self.repo_select_widget_set)
+            self.open_repo_select_window(from_settings=True)
 
         # Open repo control screen in repo viewref
-        if self.current_state == 'repo':
-            self.repo_select_manager.clear_elements()
-            self.repo_control_manager.set_initial_values()
-            self.metadata_manager.apply_metadata(self.loaded_metadata)
-            self.root.apply_widget_set(self.repo_control_widget_set)
-            self.root.set_title('pyautogit v{} - {}'.format(__version__, os.path.basename(os.getcwd())))
-            self.repo_control_manager.refresh_status()
+        elif self.current_state == 'repo':
+            self.open_autogit_window()
 
 
     def close_cleanup(self):
@@ -207,6 +204,7 @@ class PyAutogitManager:
         """Function that opens the repository control window.
         """
 
+        LOGGER.write('Opening repo control window')
         target = self.repo_select_manager.repo_menu.get()
         self.repo_select_manager.clear_elements()
         self.repo_control_manager.set_initial_values()
@@ -221,8 +219,14 @@ class PyAutogitManager:
         """Function that opens the repository select window.
 
         Fired when the backspace key is pressed in the repository control window
+
+        Parameters
+        ----------
+        from_settings : bool
+            Flag that tells cui if it is getting opened from repo control or settings screens
         """
 
+        LOGGER.write('Opening repo select window')
         self.repo_control_manager.clear_elements()
         self.settings_manager.clear_elements()
         self.repo_select_manager.set_initial_values()
@@ -230,12 +234,16 @@ class PyAutogitManager:
         self.root.apply_widget_set(self.repo_select_widget_set)
         if not from_settings:
             os.chdir('..')
-        self.root.set_title('pyautogit v{} - Repository Selection'.format(__version__))
+        self.root.set_title('pyautogit v{} - {}'.format(__version__, os.path.basename(os.getcwd())))
         
         self.repo_select_manager.refresh_status()
 
 
     def open_settings_window(self):
+        """Function for opening the settings window
+        """
+
+        LOGGER.write('Opening settings window')
         self.repo_select_manager.clear_elements()
         self.settings_manager.set_initial_values()
         self.root.apply_widget_set(self.settings_widget_set)
@@ -260,6 +268,7 @@ class PyAutogitManager:
 
         self.credentials.append(passwd)
         self.repo_select_manager.refresh_status()
+        LOGGER.write('User credentials entered')
         if self.post_input_callback is not None:
             self.post_input_callback()
         self.post_input_callback = None
@@ -321,6 +330,7 @@ class PyAutogitManager:
             Function fired once long operation is finished.
         """
 
+        LOGGER.write('Executing long operation {}'.format(title))
         self.root.show_loading_icon_popup('Please Wait', title, callback = post_loading_callback)
         self.operation_thread = threading.Thread(target=long_operation_function)
         self.operation_thread.start()
@@ -335,6 +345,7 @@ class PyAutogitManager:
             command line call to open the editor
         """
 
+        LOGGER.write('Updating the default editor to {}'.format(editor))
         self.default_editor = editor
         self.root.show_message_popup('Default Editor Changed', '{} editor will be used to open directories'.format(editor))
         self.repo_select_manager.refresh_status()
@@ -466,6 +477,8 @@ def find_repos_in_path(path):
         if os.path.isdir(new_dir) and is_git_repo(new_dir):
             repos.append(os.path.basename(new_dir))
 
+    LOGGER.write('Found repos in path: {}'.format(repos))
+
     return repos
 
 
@@ -536,12 +549,16 @@ def main():
     """
 
     target, save_metadata, credentials = parse_args()
+    LOGGER.write('Parsed args. Target location - {}'.format(target))
 
     input_type = 'repo'
     if not is_git_repo(target):
         input_type = 'workspace'
 
+    LOGGER.write('Initial state - {}'.format(input_type))
+
     root = py_cui.PyCUI(5, 4)
     manager = PyAutogitManager(root, target, input_type, save_metadata, credentials)
 
+    LOGGER.write('Initialized manager object, starting CUI...')
     root.start()

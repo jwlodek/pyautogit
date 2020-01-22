@@ -14,6 +14,7 @@ import stat
 from sys import platform
 from subprocess import Popen, PIPE
 import pyautogit.askpass as ASKPASS
+import pyautogit.logger as LOGGER
 
 
 def remove_repo_tree(target):

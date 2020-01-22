@@ -3,6 +3,7 @@
 
 from sys import platform
 import pyautogit.commands
+import pyautogit.logger as LOGGER
 
 
 class ScreenManager:
@@ -74,6 +75,7 @@ class ScreenManager:
         """
 
         if selection == 'Exit':
+            self.manager.close_cleanup()
             exit()
 
 

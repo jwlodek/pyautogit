@@ -28,16 +28,28 @@ Contains common functionality for showing command results, handling credentials,
  
 | method    | Doc             |
 |:-------|:----------------|
+| initialize_screen_elements | Function that must be overridden by subscreen. Creates py_cui_widgets, returns widget set object. | 
 | process_menu_selection | Processes based on selection returned from the men. | 
 | show_menu | Opens the menu using the menu item list for screen manager instanc. | 
 | show_command_result | Function that displays the result of stdout/err for an external command. | 
 | show_status_long_op | Shows the status of a long(async) operation on success completio. | 
-| refresh_git_status | Function that is fired after each git operation. Implement in subclasses. | 
+| refresh_status | Function that is fired after each git operation. Implement in subclasses. | 
+| clear_elements | Function that clears entries from widgets for reus. | 
+| set_initial_values | Function that sets initial values for widgets in scree. | 
 | handle_user_command | Handles custom user command. | 
 | ask_custom_command | Function that prompts user to enter custom comman. | 
 | execute_long_operation | Wrapper function that allows for executing long operations w/ credential requirements. | 
  
  
+
+### initialize_screen_elements
+
+``` python 
+    initialize_screen_elements() 
+```
+
+
+Function that must be overridden by subscreen. Creates py_cui_widgets, returns widget set object.
 
 ### process_menu_selection
 
@@ -97,14 +109,32 @@ Shows the status of a long(async) operation on success completio.
 |         err_message | str |             message to show on unsuccessful completion | 
 
 
-### refresh_git_status
+### refresh_status
 
 ``` python 
-    refresh_git_status() 
+    refresh_status() 
 ```
 
 
 Function that is fired after each git operation. Implement in subclasses.
+
+### clear_elements
+
+``` python 
+    clear_elements() 
+```
+
+
+Function that clears entries from widgets for reus.
+
+### set_initial_values
+
+``` python 
+    set_initial_values() 
+```
+
+
+Function that sets initial values for widgets in scree.
 
 ### handle_user_command
 

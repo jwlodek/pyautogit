@@ -179,7 +179,7 @@ class ScreenManager:
 
         out, err = pyautogit.commands.handle_custom_command(command)
         self.show_command_result(out, err, command_name=command)
-        self.refresh_git_status()
+        self.refresh_status()
 
 
     def ask_custom_command(self):

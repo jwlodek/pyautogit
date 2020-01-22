@@ -33,7 +33,7 @@ the pyautogit.commands module.
 | method    | Doc             |
 |:-------|:----------------|
 | process_menu_selection | Override of base class, executes based on user menu selectio. | 
-| refresh_git_status | Function that refreshes a git repository statu. | 
+| initialize_screen_elements | Function that refreshes a git repository statu. | 
 | get_repo_status_short | Gets shorthand repository statu. | 
 | get_repo_remotes | Gets list of repository remote. | 
 | get_repo_branches | Gets list of repository branche. | 
@@ -60,6 +60,8 @@ the pyautogit.commands module.
 | push_repo_branch | Pushes to remot. | 
 | create_new_branch | Creates new branch for repositor. | 
 | checkout_branch | Checks out specified branc. | 
+| merge_branches | Merges selected branch into the currently checked out branc. | 
+| revert_merge | Undos the merge that was just performe. | 
 | checkout_commit | Checks out specified commi. | 
  
  
@@ -78,10 +80,10 @@ Override of base class, executes based on user menu selectio.
 |         selection | str |             User selection from menu | 
 
 
-### refresh_git_status
+### initialize_screen_elements
 
 ``` python 
-    refresh_git_status() 
+    initialize_screen_elements() 
 ```
 
 
@@ -330,6 +332,24 @@ Creates new branch for repositor.
 
 
 Checks out specified branc.
+
+### merge_branches
+
+``` python 
+    merge_branches() 
+```
+
+
+Merges selected branch into the currently checked out branc.
+
+### revert_merge
+
+``` python 
+    revert_merge() 
+```
+
+
+Undos the merge that was just performe.
 
 ### checkout_commit
 

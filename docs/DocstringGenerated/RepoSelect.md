@@ -22,7 +22,7 @@ Class representing the manager for the repo select scree.
 | method    | Doc             |
 |:-------|:----------------|
 | process_menu_selection | Override of base class, executes depending on menu selectio. | 
-| refresh_git_status | Function that refreshes the repositories in the selection scree. | 
+| initialize_screen_elements | Function that refreshes the repositories in the selection scree. | 
 | ask_delete_repo | Function that asks user for confirmation for repo deletio. | 
 | delete_repo | Function that deletes a rep. | 
 | show_repo_status | Function that shows the current repository statu. | 
@@ -45,10 +45,10 @@ Override of base class, executes depending on menu selectio.
 |         selection | str |             The user's menu selection | 
 
 
-### refresh_git_status
+### initialize_screen_elements
 
 ``` python 
-    refresh_git_status() 
+    initialize_screen_elements() 
 ```
 
 

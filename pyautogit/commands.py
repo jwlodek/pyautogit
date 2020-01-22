@@ -574,6 +574,21 @@ def git_merge_branches(merge_branch):
     return handle_basic_command(command, name)
 
 
+def git_revert_branch_merge():
+    """Undos merge between two branches
+    
+    Returns
+    -------
+    out : str
+        Output string from stdout if success, stderr if failure
+    err : int
+        Error code if failure, 0 otherwise.
+    """
+
+    command = 'git reset --hard ORIG_HEAD'
+    name = 'git_revert_branch_merge'
+    return handle_basic_command(command, name)
+
 #--------- ---------#
 # Git Repo Commands #
 #-------------------#

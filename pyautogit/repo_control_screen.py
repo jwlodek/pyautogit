@@ -513,15 +513,21 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
             if branch.startswith('* '):
                 checkout_branch = branch
         if merge_branch is None or checkout_branch is None:
-            self.manager.root.stop_loading_popup()
             self.manager.root.show_error_popup('No branches', 'The current repo has no branches to merge!')
         elif merge_branch[2:] == checkout_branch[2:]:
-            self.manager.root.stop_loading_popup()
             self.manager.root.show_error_popup('Same branch', 'You cannot merge the same branch with itself!')
         else:
-            self.message, self.status = pyautogit.commands.git_merge_branches(merge_branch)
+            out, err = pyautogit.commands.git_merge_branches(merge_branch)
             self.refresh_git_status()
-        self.manager.root.stop_loading_popup()
+
+
+    def revert_merge(self):
+        """Undos the merge that was just performed
+        """
+
+        out, err = pyautogit.commands.git_revert_branch_merge()
+        self.show_command_result(out, err, command_name='Revert Merge')
+        self.refresh_git_status()
 
 
     def checkout_commit(self):

@@ -554,6 +554,26 @@ def git_checkout_branch(branch):
     return handle_basic_command(command, name)
 
 
+def git_merge_branches(merge_branch):
+    """Merges checked out branch with given branch
+
+    Parameters
+    ----------
+    merge_branch : str
+    
+    Returns
+    -------
+    out : str
+        Output string from stdout if success, stderr if failure
+    err : int
+        Error code if failure, 0 otherwise.
+    """
+
+    command = 'git merge {}'.format(merge_branch)
+    name = 'git_merge_branches'
+    return handle_basic_command(command, name)
+
+
 #--------- ---------#
 # Git Repo Commands #
 #-------------------#

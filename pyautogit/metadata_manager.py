@@ -1,6 +1,10 @@
 """Metadata Management Classes and Functions
 """
 
+import os
+import json
+import pyautogit
+
 class PyAutogitMetadataManager:
     """Helper class for managing inter-use metadata for pyautogit
 
@@ -41,7 +45,7 @@ class PyAutogitMetadataManager:
             os.remove(settings_file)
         metadata = {}
         metadata['EDITOR'] = self.manager.default_editor
-        metadata['VERSION'] = __version__
+        metadata['VERSION'] = pyautogit.__version__
         fp = open(settings_file, 'w')
         json.dump(metadata, fp)
         fp.close()
@@ -59,8 +63,8 @@ class PyAutogitMetadataManager:
             return
         if 'EDITOR' in metadata.keys():
             self.manager.default_editor = metadata['EDITOR']
-        if 'VERSION' in metadata.keys() and metadata['VERSION'] != __version__:
-            self.manager.root.show_message_popup('PyAutogit Updated', 'Congratulations for updating to pyautogit {}! See patch notes on github.'.format(__version__))
+        if 'VERSION' in metadata.keys() and metadata['VERSION'] != pyautogit.__version__:
+            self.manager.root.show_message_popup('PyAutogit Updated', 'Congratulations for updating to pyautogit {}! See patch notes on github.'.format(pyautogit.__version__))
     
     def read_metadata(self):
         """Converts metadata json file to python dict

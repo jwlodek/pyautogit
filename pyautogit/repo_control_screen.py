@@ -12,9 +12,9 @@ from sys import platform
 import py_cui
 import pyautogit
 import pyautogit.commands
-import pyautogit.screen_manager as SM
+import pyautogit.screen_manager
 
-class RepoControlManager(SM.ScreenManager):
+class RepoControlManager(pyautogit.screen_manager.ScreenManager):
     """Class responsible for managing functions for the repository control screen.
 
     This class contains functions that are used by pyautogit for individual repository control.
@@ -23,20 +23,69 @@ class RepoControlManager(SM.ScreenManager):
 
     Attributes
     ----------
-    manager : PyAutogitManager
-        The master PyAutogitManager object
-    message : str
-        A helper attribute for sending messages between functions
-    status : int
-        A helper attribute for sending status codes between functions
-    utility_var : obj
-        A helper attribute for sending objects between functions
     menu_choices : list of str
-        A list of menu choices accessible from the repository control menu
+        Overriden list of menu choices accessible from the repository control menu
 
     Methods
     -------
-    
+    process_menu_selection()
+        Override of base class, executes based on user menu selection
+    refresh_git_status()
+        Function that refreshes a git repository status
+    get_repo_status_short()
+        Gets shorthand repository status
+    get_repo_remotes()
+        gets list of repository remotes
+    get_repo_branches()
+        gets list of repository branches
+    show_remote_info()
+        gets info about remote
+    show_commit_info()
+        gets info about a particular commit
+    get_recent_commits()
+        gets list of recent commits to branch
+    create_new_tag()
+        Creates a new tag
+    show_log()
+        Displays the git log
+    stash_all_changes()
+        Stashes all repo changes
+    unstash_all_changes()
+        Pops the stash
+    open_git_diff()
+        Opens current git diff state
+    open_git_diff_file()
+        Gets the diff for a selected file
+    open_editor()
+        Opens an external editor if selected
+    open_editor_file()
+        Opens an external editor for a selected file
+    add_all_changes()
+        Adds all changes to staging
+    add_revert_file
+        Adds/Reverts single file from staging
+    ask_new_remote_name()
+        Asks user for new remote name
+    ask_new_remote_url()
+        Asks user for new remote url
+    add_remote()
+        Adds a new remote to repo
+    delete_remote()
+        Deletes selected remote from local repo
+    rename_remote()
+        Renames selected remote from local repo
+    commit()
+        Commits currently staged items
+    pull_repo_branch()
+        pulls from remote
+    push_repo_branch()
+        pushes to remote
+    create_new_branch()
+        Creates new branch for repository
+    checkout_branch()
+        Checks out specified branch
+    checkout_commit()
+        Checks out specified commit
     """
 
     def __init__(self, top_manager):
@@ -56,22 +105,31 @@ class RepoControlManager(SM.ScreenManager):
                                 'Checkout Version',
                                 'Open Repository in Editor', 
                                 'Enter Custom Command', 
-                                'About']
+                                'About',
+                                'Exit']
 
 
     def process_menu_selection(self, selection):
+        """Override of base class, executes based on user menu selection
+
+        Parameters
+        ----------
+        selection : str
+            User selection from menu
+        """
+
         if selection == 'Add Remote':
             self.ask_new_remote_name()
         elif selection == 'Add All':
             self.add_all_changes()
         elif selection == 'Push Branch':
-            self.push_repo_branch_cred()
+            self.execute_long_operation('Pushing', self.push_repo_branch, credentials_required=True)
         elif selection == 'Pull Branch':
-            self.pull_repo_branch_cred()
+            self.execute_long_operation('Pulling', self.pull_repo_branch, credentials_required=True)
         elif selection == 'Stash All':
-            self.stash_all_changes_op()
+            self.execute_long_operation('Stashing', self.stash_all_changes, credentials_required=False)
         elif selection == 'Stash Pop':
-            self.unstash_all_changes_op()
+            self.execute_long_operation('Unstashing', self.unstash_all_changes, credentials_required=False)
         elif selection == 'Create Tag':
             self.manager.ask_message('Please enter your new git tag', callback=self.create_new_tag)
         elif selection == 'Checkout Version':
@@ -84,6 +142,8 @@ class RepoControlManager(SM.ScreenManager):
             self.manager.ask_credentials()
         elif selection == 'Enter Custom Command':
             self.ask_custom_command()
+        elif selection == 'Exit':
+            exit()
         else:
             self.manager.open_not_supported_popup(selection)
 
@@ -106,8 +166,10 @@ class RepoControlManager(SM.ScreenManager):
             self.manager.add_files_menu.selected_item = selected_file
 
 
-
     def get_repo_status_short(self):
+        """Gets shorthand repository status
+        """
+
         out, err = pyautogit.commands.git_status_short()
         self.show_command_result(out, err, show_on_success=False, command_name="Show Status", error_message="Failed to get status")
         self.manager.add_files_menu.clear()
@@ -115,6 +177,9 @@ class RepoControlManager(SM.ScreenManager):
 
 
     def get_repo_remotes(self):
+        """Gets list of repository remotes
+        """
+
         out, err = pyautogit.commands.git_get_remotes()
         self.show_command_result(out, err, show_on_success=False, command_name="List Remotes", error_message='Cannot get git remotes')
         self.manager.remotes_menu.clear()
@@ -122,6 +187,9 @@ class RepoControlManager(SM.ScreenManager):
 
 
     def get_repo_branches(self):
+        """Gets list of repository branches
+        """
+
         out, err = pyautogit.commands.git_get_branches()
         self.show_command_result(out, err, show_on_success=False, command_name="List Branches", error_message='Cannot get git branches')
         self.manager.branch_menu.clear()
@@ -135,6 +203,9 @@ class RepoControlManager(SM.ScreenManager):
 
 
     def show_remote_info(self):
+        """Gets info about remote
+        """
+
         if self.manager.branch_menu.get() is None:
             return
         remote = self.manager.remotes_menu.get()
@@ -148,6 +219,9 @@ class RepoControlManager(SM.ScreenManager):
 
 
     def show_commit_info(self):
+        """Gets info about a particular commit
+        """
+
         if self.manager.commits_menu.get() is None:
             return
         commit_hash = self.manager.commits_menu.get().split(' ', 1)[0]
@@ -161,6 +235,8 @@ class RepoControlManager(SM.ScreenManager):
 
 
     def get_recent_commits(self):
+        """Gets list of recent commits to branch
+        """
 
         if self.manager.branch_menu.get() is None:
             return
@@ -176,6 +252,9 @@ class RepoControlManager(SM.ScreenManager):
 
 
     def create_new_tag(self):
+        """Creates a new tag
+        """
+
         new_tag_name = self.manager.user_message
         out, err = pyautogit.commands.git_create_tag(new_tag_name)
         self.show_command_result(out, err, command_name='Create Tag', success_message='Tag {} Created'.format(new_tag_name), error_message='Failed to Create Tag')
@@ -183,6 +262,9 @@ class RepoControlManager(SM.ScreenManager):
 
 
     def show_log(self):
+        """Displays the git log
+        """
+
         if self.manager.branch_menu.get() is None:
             return
         branch = self.manager.branch_menu.get()[2:]
@@ -194,21 +276,28 @@ class RepoControlManager(SM.ScreenManager):
             self.manager.info_text_block.title = 'Git log'
 
 
-    def stash_all_changes_op(self):
-        self.manager.perform_long_operation('Stashing', self.stash_all_changes, lambda : self.show_status_long_op(name="Stash Changes", succ_message="Stashed changes", err_message="Failed to stash changes"))
-
     def stash_all_changes(self):
+        """Stashes all repo changes
+        """
+
         self.message, self.status = pyautogit.commands.git_stash_all()
         self.refresh_git_status()
         self.manager.root.stop_loading_popup()
 
-    def unstash_all_changes_op(self):
-        self.manager.perform_long_operation('Stashing', self.stash_all_changes, lambda : self.show_status_long_op(name="Pop stash", succ_message="Unstashed changes", err_message="Failed to unstash changes"))
 
     def unstash_all_changes(self):
+        """Pops the stash
+        """
+
         self.message, self.status = pyautogit.commands.git_unstash_all()
+        self.refresh_git_status()
+        self.manager.root.stop_loading_popup()
+
 
     def open_git_diff(self):
+        """Opens current git diff state
+        """
+
         out, err = pyautogit.commands.git_diff()
         if err < 0:
             self.manager.root.show_error_popup('Unable to show git diff repo.', out)
@@ -218,6 +307,9 @@ class RepoControlManager(SM.ScreenManager):
 
 
     def open_git_diff_file(self):
+        """Gets the diff for a selected file
+        """
+
         filename = self.manager.add_files_menu.get()[3:]
         out, err = pyautogit.commands.git_diff_file(filename)
         if err < 0:
@@ -228,6 +320,9 @@ class RepoControlManager(SM.ScreenManager):
 
 
     def open_editor(self, file=None):
+        """Opens an external editor if selected
+        """
+
         if self.manager.default_editor is None:
             self.manager.root.show_error_popup('Error', 'No default editor specified.')
         else:
@@ -242,18 +337,28 @@ class RepoControlManager(SM.ScreenManager):
 
 
     def open_editor_file(self):
+        """Opens an external editor for a selected file
+        """
+
         filename = self.manager.add_files_menu.get()[3:]
         self.open_editor(file=filename)
 
 
     def add_all_changes(self):
+        """Adds all changes to staging
+        """
+
         out, err = pyautogit.commands.git_add_all()
         if err != 0:
             self.manager.root.show_error_popup('Git Add Error', out)
         else:
             self.refresh_git_status()
 
+
     def add_revert_file(self):
+        """Adds/Reverts single file from staging
+        """
+
         filename = self.manager.add_files_menu.get()
         if filename.startswith(' ') or filename.startswith('?'):
             out, err = pyautogit.commands.git_add_file(filename[3:])
@@ -331,6 +436,9 @@ class RepoControlManager(SM.ScreenManager):
 
 
     def commit(self):
+        """Commits currently staged items
+        """
+
         commit_message = self.manager.commit_message_box.get()
         out, err = pyautogit.commands.git_commit_changes(commit_message)
         self.show_command_result('Commit: {}'.format(commit_message), err, command_name='Commit', success_message='Commit Succeeded', error_message='Commit Failed')
@@ -340,8 +448,10 @@ class RepoControlManager(SM.ScreenManager):
         self.manager.commit_message_box.clear()
 
 
-
     def pull_repo_branch(self):
+        """Pulls from remote
+        """
+
         branch = self.manager.branch_menu.get()[2:]
         remote = self.manager.remotes_menu.get()
         self.message, self.status = pyautogit.commands.git_pull_branch(branch, remote, self.manager.credentials)
@@ -349,6 +459,9 @@ class RepoControlManager(SM.ScreenManager):
         self.manager.root.stop_loading_popup()
     
     def push_repo_branch(self):
+        """Pushes to remote
+        """
+
         branch = self.manager.branch_menu.get()[2:]
         remote = self.manager.remotes_menu.get()
         self.message, self.status = pyautogit.commands.git_push_to_branch(branch, remote, self.manager.credentials)
@@ -358,8 +471,9 @@ class RepoControlManager(SM.ScreenManager):
         self.manager.root.stop_loading_popup()
 
 
-
     def create_new_branch(self):
+        """Creates new branch for repository
+        """
 
         new_branch_name = self.manager.new_branch_textbox.get()
         if len(new_branch_name) == 0:
@@ -374,6 +488,9 @@ class RepoControlManager(SM.ScreenManager):
 
 
     def checkout_branch(self):
+        """Checks out specified branch
+        """
+
         branch = self.manager.branch_menu.get()
         if branch is not None:
             branch = branch[2:]
@@ -383,6 +500,9 @@ class RepoControlManager(SM.ScreenManager):
 
 
     def checkout_commit(self):
+        """Checks out specified commit
+        """
+
         commit = self.manager.commits_menu.get()
         if commit is not None:
             commit_hash = commit.split(' ', 1)[0]

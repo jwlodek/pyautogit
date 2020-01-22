@@ -111,7 +111,8 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         repo_select_widget_set.add_key_command(py_cui.keys.KEY_M_LOWER, self.show_menu)
         repo_select_widget_set.add_key_command(py_cui.keys.KEY_E_LOWER, self.manager.ask_default_editor)
         repo_select_widget_set.add_key_command(py_cui.keys.KEY_A_LOWER, lambda : self.git_status_box.set_text(self.manager.get_about_info()))
-        
+        self.info_panel = self.git_status_box
+
         self.refresh_status()
         return repo_select_widget_set
 

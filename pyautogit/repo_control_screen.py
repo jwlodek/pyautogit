@@ -209,6 +209,8 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
 
         repo_control_widget_set.add_key_command(py_cui.keys.KEY_C_LOWER, lambda : self.manager.root.move_focus(self.commit_message_box))
         repo_control_widget_set.add_key_command(py_cui.keys.KEY_I_LOWER, lambda : self.info_text_block.set_text(self.manager.get_about_info()))
+
+        self.info_panel = self.info_text_block
         return repo_control_widget_set
 
 

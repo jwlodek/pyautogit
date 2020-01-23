@@ -142,6 +142,7 @@ class PyAutogitManager:
         # Setup some helper objects and default information/variables
         self.current_state = current_state
         self.default_editor = None
+        self.editor_type = 'Internal'
         
         self.metadata_manager = MetaManager.PyAutogitMetadataManager(self)
         self.loaded_metadata = self.metadata_manager.read_metadata()
@@ -336,7 +337,7 @@ class PyAutogitManager:
         self.operation_thread.start()
 
 
-    def update_default_editor(self, editor):
+    def update_default_editor(self):
         """Function that sets the default editor
 
         Parameters
@@ -345,9 +346,9 @@ class PyAutogitManager:
             command line call to open the editor
         """
 
-        LOGGER.write('Updating the default editor to {}'.format(editor))
-        self.default_editor = editor
-        self.root.show_message_popup('Default Editor Changed', '{} editor will be used to open directories'.format(editor))
+        LOGGER.write('Updating the default editor to {}'.format(self.user_message))
+        self.default_editor = self.user_message
+        self.root.show_message_popup('Default Editor Changed', '{} editor will be used to open directories'.format(self.user_message))
         self.repo_select_manager.refresh_status()
 
 

@@ -93,7 +93,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         """Constructor for the RepoControlManager class
         """
 
-        super().__init__(top_manager)
+        super().__init__(top_manager, 'repository control')
         self.menu_choices = ['(Re)Enter Credentials', 
                                 'Push Branch', 
                                 'Pull Branch', 

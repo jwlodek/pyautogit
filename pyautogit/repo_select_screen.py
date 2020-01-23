@@ -38,7 +38,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         """Constructor for repo select manager
         """
         
-        super().__init__(top_manager)
+        super().__init__(top_manager, 'repo selection')
         self.menu_choices = ['(Re)Enter Credentials',
                                 'Open Directory',
                                 'Clone New Repository',

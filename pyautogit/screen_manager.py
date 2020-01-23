@@ -46,10 +46,11 @@ class ScreenManager:
         Wrapper function that should be used as lambda operation. Allows for performing long async operation while loading icon runs
     """
 
-    def __init__(self, top_manager):
+    def __init__(self, top_manager, screen_type):
         """Constructor for ScreenManager
         """
 
+        self.screen_type = screen_type
         self.manager = top_manager
         self.message = ''
         self.status = 0
@@ -79,11 +80,11 @@ class ScreenManager:
             exit()
 
 
-    # TODO: Make this a lambda function
     def show_menu(self):
         """Opens the menu using the menu item list for screen manager instance
         """
         
+        LOGGER.write('Opening {} screen menu'.format(self.screen_type))
         self.manager.root.show_menu_popup('Full Control Menu', self.menu_choices, self.process_menu_selection)
 
 

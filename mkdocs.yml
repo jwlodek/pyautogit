@@ -1,13 +1,14 @@
 site_name: pyautogit Documentation
 repo_url: https://github.com/jwlodek/pyautogit/
-copyright: 2019-2020 - Jakub Wlodek
+copyright: 2020 - Jakub Wlodek
 nav:
   - Home: index.md
   - Installation: install.md
   - Basic Usage: usage.md
   - Repo Select Screen: repo_select.md
   - Repo Control Screen: repo_control.md
-  - For Developers: developers.md
+  - For Developers:
+    - Introduction: developers.md
     - PyAutogitManager: DocstringGenerated/PyAutogit.md
     - Screen Manager: DocstringGenerated/ScreenManager.md
     - Repo Select: DocstringGenerated/RepoSelect.md

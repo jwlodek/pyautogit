@@ -407,7 +407,9 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         """Opens an external editor if selected
         """
 
-        if self.manager.default_editor is None:
+        if self.manager.editor_type == 'Internal':
+            self.manager.open_editor_window()
+        elif self.manager.default_editor is None:
             self.manager.root.show_error_popup('Error', 'No default editor specified.')
         else:
             current_path = os.getcwd()

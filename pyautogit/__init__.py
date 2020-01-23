@@ -19,12 +19,13 @@ from subprocess import Popen, PIPE
 # py_cui library used for Command Line UI construction
 import py_cui
 
-# Subscreens
+# Subscreens and pyautogit modules
 import pyautogit.logger as LOGGER
-import pyautogit.repo_select_screen as RepoSelect
-import pyautogit.repo_control_screen as RepoControl
-import pyautogit.settings_screen as Settings
-import pyautogit.metadata_manager as MetaManager
+import pyautogit.repo_select_screen as SELECT
+import pyautogit.repo_control_screen as CONTROL
+import pyautogit.internal_editor_screen as EDITOR
+import pyautogit.settings_screen as SETTINGS
+import pyautogit.metadata_manager as METADATA
 
 
 # Module version
@@ -126,9 +127,10 @@ class PyAutogitManager:
         """
 
         self.root = root
-        self.repo_select_manager = RepoSelect.RepoSelectManager(self)
-        self.repo_control_manager = RepoControl.RepoControlManager(self)
-        self.settings_manager = Settings.SettingsScreen(self)
+        self.repo_select_manager = SELECT.RepoSelectManager(self)
+        self.repo_control_manager = CONTROL.RepoControlManager(self)
+        self.settings_manager = SETTINGS.SettingsScreen(self)
+        self.editor_manager = EDITOR.EditorScreenManager(self, target_path)
         LOGGER.write('Created subscreen managers.')
 
         self.save_metadata = save_metadata
@@ -144,7 +146,7 @@ class PyAutogitManager:
         self.default_editor = None
         self.editor_type = 'Internal'
         
-        self.metadata_manager = MetaManager.PyAutogitMetadataManager(self)
+        self.metadata_manager = METADATA.PyAutogitMetadataManager(self)
         self.loaded_metadata = self.metadata_manager.read_metadata()
         LOGGER.write('Loaded metadata')
         LOGGER.write(self.loaded_metadata)
@@ -168,6 +170,7 @@ class PyAutogitManager:
         self.repo_select_widget_set = self.repo_select_manager.initialize_screen_elements()
         self.repo_control_widget_set = self.repo_control_manager.initialize_screen_elements()
         self.settings_widget_set = self.settings_manager.initialize_screen_elements()
+        self.editor_widget_set = self.editor_manager.initialize_screen_elements()
         LOGGER.write('Initialized CUI elements')
 
         # Open repo select screen in workspace view
@@ -216,6 +219,13 @@ class PyAutogitManager:
         self.repo_control_manager.refresh_status()
 
 
+    def open_autogit_window_target(self):
+        self.repo_select_manager.clear_elements()
+        self.repo_control_manager.set_initial_values()
+        self.root.apply_widget_set(self.repo_control_widget_set)
+        self.repo_control_manager.refresh_status()
+
+
     def open_repo_select_window(self, from_settings=False):
         """Function that opens the repository select window.
 
@@ -252,6 +262,12 @@ class PyAutogitManager:
         self.settings_manager.refresh_status()
 
 
+    def open_editor_window(self):
+        self.editor_manager.open_new_directory_external(os.getcwd())
+        self.editor_manager.set_initial_values()
+        self.root.apply_widget_set(self.editor_widget_set)
+        self.editor_manager.refresh_status()
+    
     #-------------------------------------------
     # Credential handler functions
     #-------------------------------------------

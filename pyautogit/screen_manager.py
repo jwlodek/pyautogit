@@ -75,7 +75,9 @@ class ScreenManager:
             An element of the self.menu_choices list selected by user
         """
 
-        if selection == 'Exit':
+        if selection == 'About' and self.info_panel is not None:
+            self.info_panel.set_text(self.manager.get_about_info())
+        elif selection == 'Exit':
             self.manager.close_cleanup()
             exit()
 

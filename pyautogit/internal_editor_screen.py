@@ -7,9 +7,19 @@ import pyautogit.screen_manager
 
 class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
     """Class representing internal editor screen for pyautogit
+
+    Attributes
+    ----------
+    opened_path : str
+        The current opened path for the editor
+
+    Methods
+    -------
     """
 
     def __init__(self, top_manager, opened_path):
+        """Contructor for the EditorScreenManager
+        """
 
         super().__init__(top_manager, 'editor')
         if os.path.isdir(opened_path):
@@ -19,6 +29,8 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
 
 
     def initialize_screen_elements(self):
+        """Override of base class. Initializes editor widgets and widget set
+        """
 
         pyautogit_editor_widget_set = py_cui.widget_set.WidgetSet(7, 8)
 
@@ -51,12 +63,22 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
 
     
     def open_new_directory_external(self, new_dir_path):
+        """Opens a new directory given an external target
+
+        Parameters
+        ----------
+        new_dir_path : str
+            Path of directory to open
+        """
+
         self.new_dir_box.set_text(new_dir_path)
         self.open_new_directory()
-    
 
 
     def open_new_directory(self):
+        """Function that opens a new directory
+        """
+
         target = self.new_dir_box.get()
         if len(target) == 0:
             target = '.'
@@ -84,6 +106,9 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
         
 
     def add_new_file(self):
+        """Function for creating a new file
+        """
+
         self.file_menu.add_item(self.new_file_textbox.get())
         self.file_menu.selected_item = len(self.file_menu.get_item_list()) - 1
         self.new_file_textbox.selected = False
@@ -94,6 +119,9 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
 
 
     def open_file_dir(self):
+        """Function that opens a file/directory from menu
+        """
+
         filename = self.file_menu.get()
         if filename.startswith('<DIR>'):
             self.new_dir_box.set_text(os.path.join(self.opened_path, filename[6:]))
@@ -111,6 +139,9 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
 
 
     def save_opened_file(self):
+        """Function that saves the opened file
+        """
+
         if self.edit_text_block.title != 'Open file':
             fp = open(os.path.join(self.opened_path, self.edit_text_block.title), 'w')
             fp.write(self.edit_text_block.get())
@@ -121,6 +152,9 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
 
 
     def delete_selected_file(self):
+        """Function that deletes the selected file
+        """
+
         if self.edit_text_block.title != 'Open file':
             try:
                 os.remove(os.path.join(self.opened_path, self.edit_text_block.title))

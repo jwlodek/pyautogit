@@ -217,6 +217,9 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
 
 
     def clear_elements(self):
+        """Function that clears elements of repo control window
+        """
+
         self.commit_message_box.clear()
         self.info_text_block.clear()
         self.info_text_block.title = 'Git Info'
@@ -228,6 +231,9 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
 
 
     def set_initial_values(self):
+        """Function that initializes status bar and info text for repo control window
+        """
+
         self.info_text_block.set_text(self.manager.get_about_info())
         self.manager.root.set_status_bar_text('Return - Bcksp | Full Menu - m | Refresh - r | Add all - a | Git log - l | Open Editor - e | Pull Branch - f | Push Branch - p')
 

@@ -2,11 +2,13 @@
 """
 
 import os
+import webbrowser
 import datetime
 import py_cui.widget_set
 import pyautogit
 import pyautogit.screen_manager
 import pyautogit.logger as LOGGER
+import urllib.request
 
 
 class SettingsScreen(pyautogit.screen_manager.ScreenManager):
@@ -34,13 +36,15 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
         """
 
         super().__init__(top_manager, 'settings screen')
+        self.current_info_log = ''
+        self.show_settings_log = True
 
 
     def initialize_screen_elements(self):
         """Override of base class function. Initializes widgets, and returns widget set
         """
 
-        settings_widget_set = py_cui.widget_set.WidgetSet(12, 6)
+        settings_widget_set = py_cui.widget_set.WidgetSet(10, 6)
         settings_widget_set.add_key_command(py_cui.keys.KEY_BACKSPACE, lambda : self.manager.open_repo_select_window(from_settings=True))
         logo_label = settings_widget_set.add_block_label(self.get_settings_ascii_art(), 0, 0, row_span=2, column_span=3, center=True)
         logo_label.set_standard_color(py_cui.RED_ON_BLACK)
@@ -62,12 +66,33 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
         self.editor_status_label = settings_widget_set.add_label('{} - {}'.format(self.manager.editor_type, self.manager.default_editor), 3, 3, column_span=3)
         self.editor_status_label.toggle_border()
 
-        self.settings_info_panel = settings_widget_set.add_text_block('Settings Info Log', 6, 3, row_span=6, column_span=3)
+
+        about_label = settings_widget_set.add_label('About', 4, 0)
+        about_label.toggle_border()
+        self.fetch_readme_file_button = settings_widget_set.add_button('README', 4, 1, command=lambda : self.fetch_about_file('README.md'))
+        self.fetch_authors_button = settings_widget_set.add_button('Authors', 4, 2, command=lambda : self.fetch_about_file('AUTHORS'))
+
+        self.fetch_license_button = settings_widget_set.add_button('License', 5, 1, command=lambda : self.fetch_about_file('LICENSE'))
+        self.revert_settings_log_button = settings_widget_set.add_button('Settings Log', 5, 2, command=self.revert_settings_log)
+
+        docs_label = settings_widget_set.add_label('Docs', 6, 0)
+        docs_label.toggle_border()
+        self.show_tutorial_button = settings_widget_set.add_button('Tutorial', 6, 1, command=self.show_tutorial)
+        self.open_web_docs_button = settings_widget_set.add_button('Online Docs', 6, 2, command=self.open_web_docs)
+
+        self.settings_info_panel = settings_widget_set.add_text_block('Settings Info Log', 4, 3, row_span=6, column_span=3)
         self.settings_info_panel.is_selectable = False
         self.info_panel = self.settings_info_panel
 
-        self.update_log_file_path('.pyautogit/{}.log'.format(datetime.datetime.today().split(' ')[0]))
+        self.update_log_file_path('.pyautogit/{}.log'.format(str(datetime.datetime.today()).split(' ')[0]))
         return settings_widget_set
+
+
+    def set_initial_values(self):
+        """Function that sets initial status bar text for settings window
+        """
+
+        self.manager.root.set_status_bar_text('Backspace - Return | Enter - Press Buttons | Arrows - Navigate')
 
 
     def add_to_settings_log(self, text):
@@ -79,7 +104,60 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
             New log item to write to settings info panel
         """
 
-        self.settings_info_panel.set_text('{}\n{}'.format(text, self.settings_info_panel.get()))
+        self.current_info_log = '{}\n{}'.format(text, self.current_info_log)
+        if self.show_settings_log:
+            self.settings_info_panel.set_text(self.current_info_log)
+
+
+    def fetch_about_file(self, file):
+        """Function that grabs readme file and displays it
+
+        Parameters
+        ----------
+        file : str
+            Filename to fetch from github repository
+        """
+
+        self.info_panel.clear()
+        self.info_panel.is_selectable = True
+        self.show_settings_log = False
+
+        try:
+            file_txt = ''
+            for line in urllib.request.urlopen('https://raw.githubusercontent.com/jwlodek/pyautogit/master/{}'.format(file)):
+                file_txt = '{}\n{}'.format(file_txt, line.decode('utf-8'))
+            self.info_panel.set_text(file_txt)
+        except:
+            self.revert_settings_log()
+            self.manager.root.show_error_popup('Unknown Error', 'Unable to fetch {} file!'.format(file))
+
+
+    def revert_settings_log(self):
+        """Function that resets to showing settings info
+        """
+
+        self.info_panel.is_selectable = False
+        if not self.show_settings_log:
+            self.show_settings_log = True
+        self.info_panel.clear()
+        self.info_panel.set_text(self.current_info_log)
+
+
+    def open_web_docs(self):
+        """Function tasked with open docs in external browser
+        """
+
+        try:
+            webbrowser.open('https://jwlodek.github.io/pyautogit-docs')
+        except:
+            self.manager.root.show_error_popup('Unknown Error', 'Unable to open online documentation!')
+
+
+    def show_tutorial(self):
+        """Function that demonstrates tutorial for using pyautogit
+        """
+
+        self.manager.root.show_warning_popup('Unimplemented', 'The Tutorial feature has not yet been implemented.')
 
 
     def ask_log_file_path(self):

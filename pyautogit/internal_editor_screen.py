@@ -15,6 +15,24 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
 
     Methods
     -------
+    initialize_screen_elements()
+        Override of base class. Initializes editor widgets and widget set
+    set_initial_values()
+        Function that sets status bar text
+    clear_elements()
+        Function for clearing widgets in editor screen
+    open_new_directory_external()
+        Opens a new directory given an external target
+    open_new_directory()
+        Function that opens a new directory
+    add_new_file()
+        Function for creating a new file
+    open_file_dir()
+        Function that opens a file/directory from menu
+    save_opened_file()
+        Function that saves the opened file
+    delete_selected_file()
+        Function that deletes the selected file
     """
 
     def __init__(self, top_manager, opened_path):
@@ -30,6 +48,11 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
 
     def initialize_screen_elements(self):
         """Override of base class. Initializes editor widgets and widget set
+
+        Returns
+        -------
+        pyautogit_editor_widget_set : py_cui.widget_set.WidgetSet
+            Widget set for internal editor screen
         """
 
         pyautogit_editor_widget_set = py_cui.widget_set.WidgetSet(7, 8)
@@ -42,26 +65,45 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
         self.file_menu.add_key_command(py_cui.keys.KEY_ENTER, self.open_file_dir)
         self.file_menu.add_key_command(py_cui.keys.KEY_DELETE, self.delete_selected_file)
         self.file_menu.add_text_color_rule('<DIR>', py_cui.GREEN_ON_BLACK, 'startswith', match_type='region', region=[5,1000])
+        self.file_menu.set_focus_text('Open File/Dir - Enter | Edit File - Space | Delete File - Delete | Return - Esc')
 
-
-
-        self.new_dir_box = pyautogit_editor_widget_set.add_text_box('Current Directory', 6, 0, column_span=2)
-        self.new_dir_box.set_text(self.opened_path)
-
+        self.current_dir_textbox = pyautogit_editor_widget_set.add_text_box('Current Directory', 6, 0, column_span=2)
+        self.current_dir_textbox.set_text(self.opened_path)
+        self.current_dir_textbox.set_focus_text('Open Directory - Enter | Cancel - Esc')
 
         self.open_new_directory()
 
         self.edit_text_block = pyautogit_editor_widget_set.add_text_block('Open file', 0, 2, row_span=7, column_span=6)
+        self.edit_text_block.set_focus_text('Return - Esc')
 
-        self.new_dir_box.add_key_command(py_cui.keys.KEY_ENTER, self.open_new_directory)
+        self.current_dir_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.open_new_directory)
 
         self.new_file_textbox = pyautogit_editor_widget_set.add_text_box('Add New File', 5, 0, column_span=2)
         self.new_file_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.add_new_file)
+        self.new_file_textbox.set_focus_text('Create File - Enter | Cancel - Esc')
 
         self.info_panel = self.edit_text_block
         return pyautogit_editor_widget_set
 
-    
+
+    def set_initial_values(self):
+        """Function that sets status bar text
+        """
+
+        self.manager.root.set_status_bar_text('Return - Bcksp | Use Widget - Enter | Navigate - Arrows')
+
+
+    def clear_elements(self):
+        """Function for clearing widgets in editor screen
+        """
+
+        self.info_panel.clear()
+        self.info_panel.title = 'Open file'
+        self.current_dir_textbox.clear()
+        self.new_file_textbox.clear()
+        self.file_menu.clear()
+
+
     def open_new_directory_external(self, new_dir_path):
         """Opens a new directory given an external target
 
@@ -71,7 +113,7 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
             Path of directory to open
         """
 
-        self.new_dir_box.set_text(new_dir_path)
+        self.current_dir_textbox.set_text(new_dir_path)
         self.open_new_directory()
 
 
@@ -79,7 +121,7 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
         """Function that opens a new directory
         """
 
-        target = self.new_dir_box.get()
+        target = self.current_dir_textbox.get()
         if len(target) == 0:
             target = '.'
         elif not os.path.exists(target):
@@ -89,7 +131,7 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
             self.manager.root.show_error_popup('Not a Dir', 'ERROR - {} is not a directory'.format(target))
             return
         target = os.path.abspath(target)
-        self.new_dir_box.set_text(target)
+        self.current_dir_textbox.set_text(target)
         self.opened_path = target
 
         files = []
@@ -124,7 +166,7 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
 
         filename = self.file_menu.get()
         if filename.startswith('<DIR>'):
-            self.new_dir_box.set_text(os.path.join(self.opened_path, filename[6:]))
+            self.current_dir_textbox.set_text(os.path.join(self.opened_path, filename[6:]))
             self.open_new_directory()
         else:
             try:

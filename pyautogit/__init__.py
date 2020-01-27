@@ -28,8 +28,9 @@ import pyautogit.settings_screen as SETTINGS
 import pyautogit.metadata_manager as METADATA
 
 
-# Module version
-__version__='0.0.2'
+# Module version + copyright
+__version__     = '0.0.2'
+__copyright__   = '2019-2020'
 
 
 class PyAutogitManager:
@@ -449,7 +450,7 @@ class PyAutogitManager:
         about_info = about_info + 'pyautogit: https://jwlodek.github.io/pyautogit-docs\n'
         about_info = about_info + 'py_cui:    https://jwlodek.github.io/py_cui-docs\n\n\n'
         about_info = about_info + 'Star me on Github!\n\n'
-        about_info = about_info + 'Copyright (c) 2019 Jakub Wlodek'
+        about_info = about_info + 'Copyright (c) {} Jakub Wlodek'.format(__copyright__)
         return about_info
 
 

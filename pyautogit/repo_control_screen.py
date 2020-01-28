@@ -201,6 +201,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         self.info_text_block.add_text_color_rule('Copyright',   py_cui.CYAN_ON_BLACK,   'startswith')
         self.info_text_block.add_text_color_rule('@.*@',        py_cui.CYAN_ON_BLACK,   'contains', match_type='regex')
         self.info_text_block.add_text_color_rule('**    ',      py_cui.RED_ON_BLACK,    'startswith')
+        self.info_text_block.add_text_color_rule('\* *\w+ ',       py_cui.CYAN_ON_BLACK,   'contains', match_type='regex')
         #self.info_text_block.selectable = False
         
         self.new_branch_textbox = repo_control_widget_set.add_text_box('New Branch', 8, 0, column_span=2)

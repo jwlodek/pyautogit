@@ -100,10 +100,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
                                 'Add Remote', 
                                 'Add All', 
                                 'Stash All', 
-                                'Stash Pop', 
-                                'Create Tag',
-                                'Synchronize Tags',
-                                'Checkout Version',
+                                'Stash Pop',
                                 'Open Repository in Editor', 
                                 'Enter Custom Command', 
                                 'About',
@@ -131,12 +128,10 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
             self.execute_long_operation('Stashing', self.stash_all_changes, credentials_required=False)
         elif selection == 'Stash Pop':
             self.execute_long_operation('Unstashing', self.unstash_all_changes, credentials_required=False)
-        elif selection == 'Create Tag':
-            self.manager.ask_message('Please enter your new git tag', callback=self.create_new_tag)
         elif selection == 'Checkout Version':
             self.show_version_selection_screen()
         elif selection == 'About':
-            self.manager.info_text_block.set_text(self.manager.get_about_info())
+            self.info_panel.set_text(self.manager.get_about_info())
         elif selection == 'Open Repository in Editor':
             self.open_editor()
         elif selection == 'Re-Enter Credentials':
@@ -151,6 +146,9 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
 
 
     def initialize_screen_elements(self):
+        """Function that initializes the widgets for the repo control screen. Override of base class function
+        """
+
         # Repo Control window screen widgets, key commands.
         repo_control_widget_set = py_cui.widget_set.WidgetSet(9, 8)
 
@@ -179,12 +177,16 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         self.remotes_menu.add_key_command(py_cui.keys.KEY_R_LOWER, lambda : self.ask_message('Please enter a new remote name', callback=self.rename_remote))
         self.remotes_menu.set_focus_text('Enter - Show Remote Info | Delete - Delete Remote | Esc - Return')
 
+        self.branch_menu_state = 'branches'
         self.branch_menu = repo_control_widget_set.add_scroll_menu('Git Branches', 4, 0, row_span=2, column_span=2)
-        self.branch_menu.add_key_command(py_cui.keys.KEY_ENTER, self.checkout_branch)
-        self.branch_menu.add_key_command(py_cui.keys.KEY_SPACE, self.show_log)
-        self.branch_menu.add_key_command(py_cui.keys.KEY_M_LOWER, self.merge_branches)
-        self.branch_menu.add_key_command(py_cui.keys.KEY_U_LOWER, self.revert_merge)
-        self.branch_menu.set_focus_text('Enter - Checkout Branch | Space - Print Info | M - Merge Branch | U - Revert Merge | Arrows - Scroll | Esc - Return')
+        self.branch_menu.add_key_command(py_cui.keys.KEY_ENTER,     self.checkout_branch)
+        self.branch_menu.add_key_command(py_cui.keys.KEY_SPACE,     self.show_log)
+        self.branch_menu.add_key_command(py_cui.keys.KEY_TAB,       self.show_tree)
+        self.branch_menu.add_key_command(py_cui.keys.KEY_T_LOWER,   self.show_tags)
+        self.branch_menu.add_key_command(py_cui.keys.KEY_B_LOWER,   self.show_branches)
+        self.branch_menu.add_key_command(py_cui.keys.KEY_M_LOWER,   self.merge_branches)
+        self.branch_menu.add_key_command(py_cui.keys.KEY_U_LOWER,   self.revert_merge)
+        self.branch_menu.set_focus_text('Enter - Checkout | Space - Log | Tab - Tree | M - Merge | T- Show Tags | B - Show Branches | U - Revert Merge | Esc - Return')
 
         self.commits_menu = repo_control_widget_set.add_scroll_menu('Recent Commits', 6, 0, row_span=2, column_span=2)
         self.commits_menu.add_key_command(py_cui.keys.KEY_ENTER, self.show_commit_info)
@@ -235,7 +237,8 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         """
 
         self.info_text_block.set_text(self.manager.get_about_info())
-        self.manager.root.set_status_bar_text('Return - Bcksp | Full Menu - m | Refresh - r | Add all - a | Git log - l | Open Editor - e | Pull Branch - f | Push Branch - p')
+        self.branch_menu_state = 'branches'
+        self.manager.root.set_status_bar_text('Return - Bcksp | Menu - m | Refresh - r | Add All - a | Log - l | Editor - e | Pull - f | Push - p | Commit - c')
 
 
     def refresh_status(self):
@@ -245,7 +248,19 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         remote = self.remotes_menu.selected_item
         selected_file = self.add_files_menu.selected_item
 
-        self.get_repo_branches()
+        if self.branch_menu_state == 'branches':
+            self.get_repo_branches()
+            self.branch_menu.title = 'Git Branches'
+            self.new_branch_textbox.title = 'New Branch'
+            self.new_branch_textbox.key_commands[py_cui.keys.KEY_ENTER] = self.create_new_branch
+            self.new_branch_textbox.set_focus_text('Enter - Create new branch | Esc - Return')
+        else:
+            self.get_repo_tags()
+            self.branch_menu.title = 'Git Tags'
+            self.new_branch_textbox.title = 'New Tag'
+            self.new_branch_textbox.key_commands[py_cui.keys.KEY_ENTER] = self.create_new_tag
+            self.new_branch_textbox.set_focus_text('Enter - Create new tag | Esc - Return')
+        
         self.get_repo_remotes()
         self.get_repo_status_short()
         self.get_recent_commits()
@@ -276,6 +291,14 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         self.remotes_menu.add_item_list(out.splitlines())
 
 
+    def show_branches(self):
+        """Function that swaps to showing branches
+        """
+
+        self.branch_menu_state = 'branches'
+        self.refresh_status()
+
+
     def get_repo_branches(self):
         """Gets list of repository branches
         """
@@ -290,6 +313,24 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
                 break
             selected_branch = selected_branch + 1
         self.branch_menu.selected_item = selected_branch
+
+
+    def show_tags(self):
+        """Function that swaps to showing tags
+        """
+        
+        self.branch_menu_state = 'tags'
+        self.refresh_status()
+
+
+    def get_repo_tags(self):
+        """Gets list of repository tags
+        """
+
+        out, err = pyautogit.commands.git_get_tags()
+        self.show_command_result(out, err, show_on_success=False, command_name="List Tags", error_message="Cannot list git tags")
+        self.branch_menu.clear()
+        self.branch_menu.add_item_list(out.splitlines())
 
 
     def show_remote_info(self):
@@ -330,9 +371,12 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
 
         if self.branch_menu.get() is None:
             return
-        branch = self.branch_menu.get()[2:]
-        if branch.startswith('(HEAD'):
-            branch = branch.split(' ')[-1][:-1]
+        if self.branch_menu_state == 'branches':
+            branch = self.branch_menu.get()[2:]
+            if branch.startswith('(HEAD'):
+                branch = branch.split(' ')[-1][:-1]
+        else:
+            branch = self.branch_menu.get()
         out, err = pyautogit.commands.git_get_recent_commits(branch)
         if err < 0:
             self.root.show_error_popup('Cannot get recent commits', out)
@@ -345,10 +389,15 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         """Creates a new tag
         """
 
-        new_tag_name = self.manager.user_message
-        out, err = pyautogit.commands.git_create_tag(new_tag_name)
-        self.show_command_result(out, err, command_name='Create Tag', success_message='Tag {} Created'.format(new_tag_name), error_message='Failed to Create Tag')
-        self.show_log()
+        new_tag_name = self.new_branch_textbox.get()
+        if new_tag_name is not None and len(new_tag_name) > 0:
+            out, err = pyautogit.commands.git_create_tag(new_tag_name)
+            self.show_command_result(out, err, command_name='Create Tag', success_message='Tag {} Created'.format(new_tag_name), error_message='Failed to Create Tag')
+            self.show_log()
+            self.show_tags()
+            self.refresh_status()
+        else:
+            self.manager.show_warning_popup('Warning', 'Cannot create tag with an empty name!')
 
 
     def show_log(self):
@@ -357,13 +406,38 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
 
         if self.branch_menu.get() is None:
             return
-        branch = self.branch_menu.get()[2:]
+        if self.branch_menu_state == 'branches':
+            branch = self.branch_menu.get()[2:]
+            if branch.startswith('(HEAD'):
+                branch = branch.split(' ')[-1][:-1]
+        else:
+            branch = self.branch_menu.get()
         out, err = pyautogit.commands.git_log(branch)
         if err < 0:
             self.root.show_error_popup('Unable to show git log for branch {}.'.format(branch), out)
         else:
             self.info_text_block.set_text(out)
             self.info_text_block.title = 'Git log'
+
+
+    def show_tree(self):
+        """Displays git log as a tree
+        """
+
+        if self.branch_menu.get() is None:
+            return
+        if self.branch_menu_state == 'branches':
+            branch = self.branch_menu.get()[2:]
+            if branch.startswith('(HEAD'):
+                branch = branch.split(' ')[-1][:-1]
+        else:
+            branch = self.branch_menu.get()
+        out, err = pyautogit.commands.git_tree(branch)
+        if err < 0:
+            self.root.show_error_popup('Unable to show git log for branch {}.'.format(branch), out)
+        else:
+            self.info_text_block.set_text(out)
+            self.info_text_block.title = 'Git tree'
 
 
     def stash_all_changes(self):

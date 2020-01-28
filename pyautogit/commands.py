@@ -253,19 +253,81 @@ def git_status(repo_path='.'):
     name = "git_short_status"
     return handle_basic_command(command, name)
 
+
+def git_tree(branch):
+    """Function that gets git log as a tree
+
+    Parameters
+    ----------
+    branch : str
+        branch or tag name to log
+
+    Returns
+    -------
+    out : str
+        Output string from stdout if success, stderr if failure
+    err : int
+        Error code if failure, 0 otherwise.
+    """
+
+    command = 'git --no-pager log --oneline --decorate --all --graph {}'.format(branch)
+    name = 'git_tree'
+    return handle_basic_command(command, name)
+
+
 def git_log(branch):
+    """Function that gets git log information
+
+    Parameters
+    ----------
+    branch : str
+        branch or tag name to log
+
+    Returns
+    -------
+    out : str
+        Output string from stdout if success, stderr if failure
+    err : int
+        Error code if failure, 0 otherwise.
+    """
+
     command = 'git --no-pager log {}'.format(branch)
     name='git_log'
     return handle_basic_command(command, name)
 
 
 def git_diff():
+    """Function that gets git diff
+
+    Returns
+    -------
+    out : str
+        Output string from stdout if success, stderr if failure
+    err : int
+        Error code if failure, 0 otherwise.
+    """
+
     command = 'git diff'
     name='git_diff'
     return handle_basic_command(command, name)
 
 
 def git_diff_file(filename):
+    """Function that gets git diff for specific file
+
+    Parameters
+    ----------
+    filename : str
+        Name of file to diff
+
+    Returns
+    -------
+    out : str
+        Output string from stdout if success, stderr if failure
+    err : int
+        Error code if failure, 0 otherwise.
+    """
+
     command = 'git diff {}'.format(filename)
     name='git_diff_file'
     return handle_basic_command(command, name)
@@ -469,6 +531,21 @@ def git_create_tag(tag_name):
     name = 'git_create_tag'
     return handle_basic_command(command, name)
 
+
+def git_get_tags():
+    """Function that gets list of git tags in repo
+    
+    Returns
+    -------
+    out : str
+        Output string from stdout if success, stderr if failure
+    err : int
+        Error code if failure, 0 otherwise.
+    """
+
+    command = 'git tag'
+    name = 'git_get_tags'
+    return handle_basic_command(command, name)
 
 #---------------------#
 # Git Branch Commands #

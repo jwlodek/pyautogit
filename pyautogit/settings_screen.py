@@ -44,8 +44,8 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
         """Override of base class function. Initializes widgets, and returns widget set
         """
 
-        settings_widget_set = py_cui.widget_set.WidgetSet(10, 6)
-        settings_widget_set.add_key_command(py_cui.keys.KEY_BACKSPACE, lambda : self.manager.open_repo_select_window(from_settings=True))
+        settings_widget_set = py_cui.widget_set.WidgetSet(9, 6)
+        settings_widget_set.add_key_command(py_cui.keys.KEY_BACKSPACE, self.manager.open_repo_select_window)
         logo_label = settings_widget_set.add_block_label(self.get_settings_ascii_art(), 0, 0, row_span=2, column_span=3, center=True)
         logo_label.set_standard_color(py_cui.RED_ON_BLACK)
         link_label = settings_widget_set.add_label('Settings Screen - pyautogit v{}'.format(pyautogit.__version__), 0, 3, row_span=2, column_span=3)
@@ -55,36 +55,36 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
         debug_log_label.toggle_border()
         self.debug_log_toggle = settings_widget_set.add_button('Toggle Logs', 2, 1, command=self.toggle_logging)
         self.debug_enter_path_button = settings_widget_set.add_button('Set Log File', 2, 2, command=self.ask_log_file_path)
-        self.debug_log_status_label = settings_widget_set.add_label('OFF - {}'.format(LOGGER._LOG_FILE_PATH), 2, 3, column_span=3)
-        self.debug_log_status_label.toggle_border()
+        self.debug_log_status_label = settings_widget_set.add_label('OFF - {}'.format(LOGGER._LOG_FILE_PATH), 3, 0, column_span=3)
+        #self.debug_log_status_label.toggle_border()
 
 
-        editor_label = settings_widget_set.add_label('Default Editor', 3, 0)
+        editor_label = settings_widget_set.add_label('Default Editor', 4, 0)
         editor_label.toggle_border()
-        self.external_editor_toggle = settings_widget_set.add_button('External/Internal', 3, 1, command=self.toggle_editor_type)
-        self.external_editor_enter = settings_widget_set.add_button('Select Editor', 3, 2, command=self.ask_default_editor)
-        self.editor_status_label = settings_widget_set.add_label('{} - {}'.format(self.manager.editor_type, self.manager.default_editor), 3, 3, column_span=3)
-        self.editor_status_label.toggle_border()
+        self.external_editor_toggle = settings_widget_set.add_button('External/Internal', 4, 1, command=self.toggle_editor_type)
+        self.external_editor_enter = settings_widget_set.add_button('Select Editor', 4, 2, command=self.ask_default_editor)
+        self.editor_status_label = settings_widget_set.add_label('{} - {}'.format(self.manager.editor_type, self.manager.default_editor), 5, 0, column_span=3)
+        #self.editor_status_label.toggle_border()
 
 
-        about_label = settings_widget_set.add_label('About', 4, 0)
+        about_label = settings_widget_set.add_label('About', 6, 0)
         about_label.toggle_border()
-        self.fetch_readme_file_button = settings_widget_set.add_button('README', 4, 1, command=lambda : self.fetch_about_file('README.md'))
-        self.fetch_authors_button = settings_widget_set.add_button('Authors', 4, 2, command=lambda : self.fetch_about_file('AUTHORS'))
+        self.fetch_readme_file_button = settings_widget_set.add_button('README', 6, 1, command=lambda : self.fetch_about_file('README.md'))
+        self.fetch_authors_button = settings_widget_set.add_button('Authors', 6, 2, command=lambda : self.fetch_about_file('AUTHORS'))
 
-        self.fetch_license_button = settings_widget_set.add_button('License', 5, 1, command=lambda : self.fetch_about_file('LICENSE'))
-        self.revert_settings_log_button = settings_widget_set.add_button('Settings Log', 5, 2, command=self.revert_settings_log)
+        self.fetch_license_button = settings_widget_set.add_button('License', 7, 1, command=lambda : self.fetch_about_file('LICENSE'))
+        self.revert_settings_log_button = settings_widget_set.add_button('Settings Log', 7, 2, command=self.revert_settings_log)
 
-        docs_label = settings_widget_set.add_label('Docs', 6, 0)
+        docs_label = settings_widget_set.add_label('Docs', 8, 0)
         docs_label.toggle_border()
-        self.show_tutorial_button = settings_widget_set.add_button('Tutorial', 6, 1, command=self.show_tutorial)
-        self.open_web_docs_button = settings_widget_set.add_button('Online Docs', 6, 2, command=self.open_web_docs)
+        self.show_tutorial_button = settings_widget_set.add_button('Tutorial', 8, 1, command=self.show_tutorial)
+        self.open_web_docs_button = settings_widget_set.add_button('Online Docs', 8, 2, command=self.open_web_docs)
 
-        self.settings_info_panel = settings_widget_set.add_text_block('Settings Info Log', 4, 3, row_span=6, column_span=3)
+        self.settings_info_panel = settings_widget_set.add_text_block('Settings Info Log', 2, 3, row_span=7, column_span=3)
         self.settings_info_panel.is_selectable = False
         self.info_panel = self.settings_info_panel
 
-        self.update_log_file_path('.pyautogit/{}.log'.format(str(datetime.datetime.today()).split(' ')[0]))
+        self.update_log_file_path('.pyautogit/{}.log'.format(str(datetime.datetime.today()).split(' ')[0]), default_path=True)
         return settings_widget_set
 
 
@@ -227,7 +227,7 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
         self.refresh_status()
 
 
-    def update_log_file_path(self, new_log_file_path):
+    def update_log_file_path(self, new_log_file_path, default_path=False):
         """Function that updates log file path if valid
 
         Parameters
@@ -240,7 +240,7 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
             LOGGER.set_log_file_path(new_log_file_path)
             self.add_to_settings_log('Update log file path: {}'.format(new_log_file_path))
             self.refresh_status()
-        else:
+        elif not default_path:
             self.manager.root.show_error_popup('Permission Error', 'The log file path either does not exist, or you do not have write permissions!')
 
 

@@ -3,10 +3,15 @@ from sys import platform
 from setuptools.command.install import install
 import os
 
-#required_packages = ['py_cui']
-required_packages = []
+with open('requirements.txt', 'r') as req_fp:
+    required_packages = req_fp.readlines()
+
+# Use README for long description
+with open('README.md', 'r') as readme_fp:
+    long_description = readme_fp.read()
 
 
+# This class is required since the askpass helper scripts need to be installed with execute permissions
 class InstallLibrary(install):
     def run(self):
         install.run(self)
@@ -23,8 +28,8 @@ setup(
     license="BSD 3-Clause",
     keywords="git command-line cli cui curses",
     url="https://github.com/jwlodek/pyautogit",
-    #long_description=read("README.md"),
-    #long_description_content_type='text/markdown',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     cmdclass={'install':InstallLibrary},
     packages = find_packages(exclude=['tests', 'docs']),
     extras_require={
@@ -40,12 +45,12 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         
-        'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
 
 )

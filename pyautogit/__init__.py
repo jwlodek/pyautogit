@@ -176,7 +176,7 @@ class PyAutogitManager:
 
         # Open repo select screen in workspace view
         if self.current_state == 'workspace':
-            self.open_repo_select_window(from_settings=True)
+            self.open_repo_select_window()
 
         # Open repo control screen in repo viewref
         elif self.current_state == 'repo':
@@ -215,27 +215,27 @@ class PyAutogitManager:
         self.repo_control_manager.set_initial_values()
         
         self.root.apply_widget_set(self.repo_control_widget_set)
-        os.chdir(target)
+        if self.current_state == 'workspace':
+            os.chdir(target)
+        self.current_state = 'repo'
         self.root.set_title('pyautogit v{} - {}'.format(__version__, target))
         self.repo_control_manager.refresh_status()
 
 
     def open_autogit_window_target(self):
+        """Function that opens a repo control window given a target location
+        """
+
         self.repo_select_manager.clear_elements()
         self.repo_control_manager.set_initial_values()
         self.root.apply_widget_set(self.repo_control_widget_set)
         self.repo_control_manager.refresh_status()
 
 
-    def open_repo_select_window(self, from_settings=False):
+    def open_repo_select_window(self):
         """Function that opens the repository select window.
 
         Fired when the backspace key is pressed in the repository control window
-
-        Parameters
-        ----------
-        from_settings : bool
-            Flag that tells cui if it is getting opened from repo control or settings screens
         """
 
         LOGGER.write('Opening repo select window')
@@ -244,10 +244,10 @@ class PyAutogitManager:
         self.repo_select_manager.set_initial_values()
         
         self.root.apply_widget_set(self.repo_select_widget_set)
-        if not from_settings:
+        if self.current_state == 'repo':
             os.chdir('..')
+        self.current_state = 'workspace'
         self.root.set_title('pyautogit v{} - {}'.format(__version__, os.path.basename(os.getcwd())))
-        
         self.repo_select_manager.refresh_status()
 
 
@@ -260,13 +260,18 @@ class PyAutogitManager:
         self.settings_manager.set_initial_values()
         self.root.apply_widget_set(self.settings_widget_set)
         self.root.set_title('pyautogit v{} Settings'.format(__version__))
+        self.current_state = 'settings'
         self.settings_manager.refresh_status()
 
 
     def open_editor_window(self):
+        """Function that opens an editor window
+        """
+
         self.editor_manager.open_new_directory_external(os.getcwd())
         self.editor_manager.set_initial_values()
         self.root.apply_widget_set(self.editor_widget_set)
+        self.current_state == 'editor'
         self.editor_manager.refresh_status()
     
     #-------------------------------------------

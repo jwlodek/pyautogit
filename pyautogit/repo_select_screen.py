@@ -96,7 +96,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         link_label = repo_select_widget_set.add_label('v{} - https://github.com/jwlodek/pyautogit'.format(pyautogit.__version__), 0, 2, column_span=2)
         link_label.add_text_color_rule('https://.*', py_cui.CYAN_ON_BLACK, 'contains', match_type='regex')
         
-        self.repo_menu = repo_select_widget_set.add_scroll_menu('Repositories in Workspace', 1, 2, row_span=2)
+        self.repo_menu = repo_select_widget_set.add_scroll_menu('Repos in Workspace', 1, 2, row_span=2)
         self.repo_menu.add_item_list(self.manager.repos)
         self.repo_menu.add_key_command(py_cui.keys.KEY_ENTER,   self.manager.open_autogit_window)
         self.repo_menu.add_key_command(py_cui.keys.KEY_SPACE,   self.show_repo_status)
@@ -141,8 +141,8 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         """
 
         if self.manager.metadata_manager.first_time:
-            self.git_status_box.set_text(self.get_welcome_message())
-            self.manger.metadata_manager.first_time = False
+            self.git_status_box.set_text(self.manager.get_welcome_message())
+            self.manager.metadata_manager.first_time = False
         else:
             self.git_status_box.set_text(self.manager.get_about_info(with_logo = False))
         self.manager.root.set_status_bar_text('Quit - q | Full Menu - m | Refresh - r | Update Credentials - c | Settings Menu - s')

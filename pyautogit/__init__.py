@@ -248,6 +248,7 @@ class PyAutogitManager:
             os.chdir('..')
         self.current_state = 'workspace'
         self.root.set_title('pyautogit v{} - {}'.format(__version__, os.path.basename(os.getcwd())))
+        self.root.move_focus(self.repo_select_manager.repo_menu)
         self.repo_select_manager.refresh_status()
 
 
@@ -558,11 +559,11 @@ def parse_args():
             if os.path.isdir(args['workspace']):
                 os.chdir(args['workspace'])
             else:
-                print('Path {} is not a directory.'.format(args['workspace']))
-                exit()
+                print('ERROR - Path {} is not a directory.'.format(args['workspace']))
+                exit(-1)
         else:
-            print('Path {} does not exist.'.format(args['workspace']))
-            exit()
+            print('ERROR - Path {} does not exist.'.format(args['workspace']))
+            exit(-1)
 
     return target_repo, not args['nosavemetadata'], credentials
 
@@ -573,9 +574,20 @@ def main():
 
     target, save_metadata, credentials = parse_args()
 
+    target_abs = os.path.abspath(target)
+
     input_type = 'repo'
     if not is_git_repo(target):
         input_type = 'workspace'
+
+    # Make sure we have write permissions
+    if not os.access(target, os.W_OK):
+        print('ERROR - Permission error for target {}'.format(target_abs))
+        exit(-1)
+    if input_type == 'repo' and not os.access(os.path.dirname(target_abs), os.W_OK):
+        print('ERROR - Permission denied for parent workspace {} of repository {}'.format(os.path.dirname(target_abs), target_abs))
+        exit(-1)
+
 
     root = py_cui.PyCUI(5, 4)
     manager = PyAutogitManager(root, target, input_type, save_metadata, credentials)

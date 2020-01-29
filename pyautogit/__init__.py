@@ -572,16 +572,16 @@ def main():
     """
 
     target, save_metadata, credentials = parse_args()
-    LOGGER.write('Parsed args. Target location - {}'.format(target))
 
     input_type = 'repo'
     if not is_git_repo(target):
         input_type = 'workspace'
 
-    LOGGER.write('Initial state - {}'.format(input_type))
-
     root = py_cui.PyCUI(5, 4)
     manager = PyAutogitManager(root, target, input_type, save_metadata, credentials)
-
+    
+    LOGGER.write('Parsed args. Target location - {}'.format(target))
+    LOGGER.write('Initial state - {}'.format(input_type))
     LOGGER.write('Initialized manager object, starting CUI...')
+
     root.start()

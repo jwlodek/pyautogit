@@ -80,6 +80,14 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
 
 
     def initialize_screen_elements(self):
+        """Override of base function. Initializes widgets, returns screen widget set
+
+        Returns
+        -------
+        repo_select_widget_set : py_cui.widget_set.WidgetSet
+            Widget set object for repo select screen
+        """
+
         repo_select_widget_set = py_cui.widget_set.WidgetSet(5,4)
         
         logo_label = repo_select_widget_set.add_block_label(self.manager.get_logo_text(), 0, 0, column_span=2, center=False)
@@ -120,10 +128,18 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
 
     
     def clear_elements(self):
+        """Override of base class function, clears text fields
+        """
+
         self.git_status_box.clear()
+        self.clone_new_box.clear()
+        self.create_new_box.clear()
 
 
     def set_initial_values(self):
+        """Override of base function. Sets some initial text for the widgets
+        """
+
         if self.manager.metadata_manager.first_time:
             self.git_status_box.set_text(self.get_welcome_message())
             self.manger.metadata_manager.first_time = False
@@ -198,6 +214,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         new_repo_url = self.clone_new_box.get()
         self.message, self.status = pyautogit.commands.git_clone_new_repo(new_repo_url, self.manager.credentials)
         self.refresh_status()
+        self.clone_new_box.clear()
         # Turn off loading popup
         self.manager.root.stop_loading_popup()
 

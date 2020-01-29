@@ -12,3 +12,5 @@ python3 markdoc.py ../../../pyautogit/screen_manager.py ../../DocstringGenerated
 python3 markdoc.py ../../../pyautogit/commands.py ../../DocstringGenerated/Commands.md
 python3 markdoc.py ../../../pyautogit/repo_select_screen.py ../../DocstringGenerated/RepoSelect.md
 python3 markdoc.py ../../../pyautogit/repo_control_screen.py ../../DocstringGenerated/RepoControl.md
+python3 markdoc.py ../../../pyautogit/settings_screen.py ../../DocstringGenerated/SettingsScreen.md
+python3 markdoc.py ../../../pyautogit/internal_editor_screen.py ../../DocstringGenerated/EditorScreen.md

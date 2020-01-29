@@ -14,5 +14,7 @@ nav:
     - Repo Select: DocstringGenerated/RepoSelect.md
     - Repo Control: DocstringGenerated/RepoControl.md
     - Commands: DocstringGenerated/Commands.md
+    - Settings Screen: DocstringGenerated/SettingsScreen.md
+    - Editor Screen: DocstringGenerated/EditorScreen.md
   - About: about.md
 theme: readthedocs

@@ -42,6 +42,11 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
 
     def initialize_screen_elements(self):
         """Override of base class function. Initializes widgets, and returns widget set
+
+        Returns
+        -------
+        settings_widget_set : py_cui.widget_set.WidgetSet
+            Widget set object for rsettings screen
         """
 
         settings_widget_set = py_cui.widget_set.WidgetSet(9, 6)

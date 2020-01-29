@@ -1,6 +1,6 @@
-# Contributing to py_cui
+# Contributing to pyautogit
 
-I'll welcome anyone wanting to contribute to the development of `pyautogit`. If you wish to contribute to the core codebase of the library, you may want to take a look at the developers page of the [documentation](https://jwlodek.github.io/pyautogit-docs/). If you have used `pyautogit` for a project, or have any feedback, feel free to let me know.
+I'll welcome anyone wanting to contribute to the development of `pyautogit`. If you wish to contribute to the core codebase of the utility, you may want to take a look at the developers page of the [documentation](https://jwlodek.github.io/pyautogit-docs/).
 
 Before you create a pull request, here are some things to keep in mind:
 
@@ -10,7 +10,12 @@ If you make a pull request and Travis tells you a unit test failed, please fix t
 
 #### Use consistent numpy documentation
 
-The documentation building process for `pyautogit` depends on strict numpy-style documenatation. Please be consistent in format with the rest of the project.
+The documentation building process for `pyautogit` depends on strict numpy-style documenatation. Please be consistent in format with the rest of the project. The Travis-CI will check if documentation can be auto-generated from the comments, and if this test fails I will not merge the pull request. You can locally run this test by running the following:
+```
+cd docs/scripts
+bash generateFromDocstrings.sh
+```
+If you get a `Successfully Converted!` message for each of the modules, the test succeeded.
 
 #### Use the fork-pull request model
 

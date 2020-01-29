@@ -147,11 +147,17 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
 
     def initialize_screen_elements(self):
         """Function that initializes the widgets for the repo control screen. Override of base class function
+
+        Returns
+        -------
+        repo_control_widget_set : py_cui.widget_set.WidgetSet
+            Widget set object for repo control screen
         """
 
         # Repo Control window screen widgets, key commands.
         repo_control_widget_set = py_cui.widget_set.WidgetSet(9, 8)
 
+        # Base keyboard shortcuts.
         repo_control_widget_set.add_key_command(py_cui.keys.KEY_BACKSPACE, self.manager.open_repo_select_window)
         repo_control_widget_set.add_key_command(py_cui.keys.KEY_R_LOWER, self.refresh_status)
         repo_control_widget_set.add_key_command(py_cui.keys.KEY_M_LOWER, self.show_menu)
@@ -160,8 +166,19 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         repo_control_widget_set.add_key_command(py_cui.keys.KEY_E_LOWER, self.open_editor)
         repo_control_widget_set.add_key_command(py_cui.keys.KEY_F_LOWER, lambda : self.execute_long_operation('Pulling', self.pull_repo_branch, credentials_required=True))
         repo_control_widget_set.add_key_command(py_cui.keys.KEY_P_LOWER, lambda : self.execute_long_operation('Pushing', self.push_repo_branch, credentials_required=True))
+        repo_control_widget_set.add_key_command(py_cui.keys.KEY_H_LOWER, self.show_help_overview)
         repo_control_widget_set.add_key_command(py_cui.keys.KEY_C_UPPER, self.ask_custom_command)
 
+        # Textboxes for commit message and new branch/tag
+        self.new_branch_textbox = repo_control_widget_set.add_text_box('New Branch', 8, 0, column_span=2)
+        self.new_branch_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.create_new_branch)
+        self.new_branch_textbox.set_focus_text('Create New Branch - Enter | Help - h | Return - Esc')
+        
+        self.commit_message_box = repo_control_widget_set.add_text_box('Commit Message', 8, 2, column_span=6)
+        self.commit_message_box.add_key_command(py_cui.keys.KEY_ENTER, self.commit)
+        self.commit_message_box.set_focus_text('Commit Changes - Enter | Help - h | Return - Esc')
+
+        # Add/Unstage files menu. Shows current git status
         self.add_files_menu = repo_control_widget_set.add_scroll_menu('Add Files', 0, 0, row_span=2, column_span=2)
         self.add_files_menu.add_text_color_rule(' ', py_cui.RED_ON_BLACK,   'startswith',       match_type='region', region=[0,3], include_whitespace=True)
         self.add_files_menu.add_text_color_rule('?', py_cui.RED_ON_BLACK,   'startswith',       match_type='region', region=[0,3], include_whitespace=True)
@@ -169,31 +186,41 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         self.add_files_menu.add_key_command(py_cui.keys.KEY_ENTER, self.add_revert_file)
         self.add_files_menu.add_key_command(py_cui.keys.KEY_SPACE, self.open_git_diff_file)
         self.add_files_menu.add_key_command(py_cui.keys.KEY_E_LOWER, self.open_editor_file)
-        self.add_files_menu.set_focus_text('Enter - git add | Space - see diff | Arrows - scroll | Esc - Return')
+        self.add_files_menu.add_key_command(py_cui.keys.KEY_H_LOWER, self.show_help_add_files_menu)
+        self.add_files_menu.set_focus_text('Add/Unstage - Enter | Diff - Space | Edit - e | Help - h | Return - Esc')
 
+        # Shows current git remotes
         self.remotes_menu = repo_control_widget_set.add_scroll_menu('Git Remotes', 2, 0, row_span=2, column_span=2)
         self.remotes_menu.add_key_command(py_cui.keys.KEY_ENTER, self.show_remote_info)
+        self.remotes_menu.add_key_command(py_cui.keys.KEY_N_LOWER, self.ask_new_remote_name)
         self.remotes_menu.add_key_command(py_cui.keys.KEY_DELETE, self.delete_remote)
         self.remotes_menu.add_key_command(py_cui.keys.KEY_R_LOWER, lambda : self.ask_message('Please enter a new remote name', callback=self.rename_remote))
-        self.remotes_menu.set_focus_text('Enter - Show Remote Info | Delete - Delete Remote | Esc - Return')
+        self.remotes_menu.add_key_command(py_cui.keys.KEY_H_LOWER, self.show_help_remotes_menu)
+        self.remotes_menu.set_focus_text('Remote Info - Enter | New Remote - n | Delete Remote - Delete | Help - h | Return - Esc')
 
+        # Shows current git branches/tags
         self.branch_menu_state = 'branches'
         self.branch_menu = repo_control_widget_set.add_scroll_menu('Git Branches', 4, 0, row_span=2, column_span=2)
         self.branch_menu.add_key_command(py_cui.keys.KEY_ENTER,     self.checkout_branch)
         self.branch_menu.add_key_command(py_cui.keys.KEY_SPACE,     self.show_log)
         self.branch_menu.add_key_command(py_cui.keys.KEY_TAB,       self.show_tree)
+        self.branch_menu.add_key_command(py_cui.keys.KEY_N_LOWER,   lambda : self.manager.root.move_focus(self.new_branch_textbox))
         self.branch_menu.add_key_command(py_cui.keys.KEY_T_LOWER,   self.show_tags)
         self.branch_menu.add_key_command(py_cui.keys.KEY_B_LOWER,   self.show_branches)
         self.branch_menu.add_key_command(py_cui.keys.KEY_M_LOWER,   self.merge_branches)
         self.branch_menu.add_key_command(py_cui.keys.KEY_U_LOWER,   self.revert_merge)
-        self.branch_menu.set_focus_text('Enter - Checkout | Space - Log | Tab - Tree | M - Merge | T- Show Tags | B - Show Branches | U - Revert Merge | Esc - Return')
+        self.branch_menu.add_key_command(py_cui.keys.KEY_H_LOWER,   self.show_help_branch_menu)
+        self.branch_menu.set_focus_text('Checkout - Enter | Log - Space | New - n | Merge - m | Show Tags - t | Show Branches - b | Revert Merge - u | Help - h | Esc - Return')
 
+        # Shows list of recent git commits for checked out branch.
         self.commits_menu = repo_control_widget_set.add_scroll_menu('Recent Commits', 6, 0, row_span=2, column_span=2)
         self.commits_menu.add_key_command(py_cui.keys.KEY_ENTER, self.show_commit_info)
         self.commits_menu.add_key_command(py_cui.keys.KEY_SPACE, self.checkout_commit)
+        self.commits_menu.add_key_command(py_cui.keys.KEY_H_LOWER,   self.show_help_commits_menu)
         self.commits_menu.add_text_color_rule('^.*? ', py_cui.GREEN_ON_BLACK, 'contains', match_type='regex', include_whitespace=True)
-        self.commits_menu.set_focus_text('Enter - Show commit info | Space - Checkout commit | Esc - Return')
+        self.commits_menu.set_focus_text('Commit Info - Enter | Checkout - Space | Help - h | Return - Esc')
 
+        # Main info text block listing information for all pyautogit operations
         self.info_text_block = repo_control_widget_set.add_text_block('Git Info', 0, 2, row_span=8, column_span=6)
         self.info_text_block.add_text_color_rule('+',           py_cui.GREEN_ON_BLACK,  'startswith')
         self.info_text_block.add_text_color_rule('-',           py_cui.RED_ON_BLACK,    'startswith')
@@ -203,15 +230,8 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         self.info_text_block.add_text_color_rule('**    ',      py_cui.RED_ON_BLACK,    'startswith')
         self.info_text_block.add_text_color_rule('\* *\w+ ',       py_cui.CYAN_ON_BLACK,   'contains', match_type='regex')
         #self.info_text_block.selectable = False
-        
-        self.new_branch_textbox = repo_control_widget_set.add_text_box('New Branch', 8, 0, column_span=2)
-        self.new_branch_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.create_new_branch)
-        self.new_branch_textbox.set_focus_text('Enter - Create new branch | Esc - Return')
-        
-        self.commit_message_box = repo_control_widget_set.add_text_box('Commit Message', 8, 2, column_span=6)
-        self.commit_message_box.add_key_command(py_cui.keys.KEY_ENTER, self.commit)
-        self.commit_message_box.set_focus_text('Enter - Commit changes | Esc - Return')
 
+        # Add some simple shortcut commands
         repo_control_widget_set.add_key_command(py_cui.keys.KEY_C_LOWER, lambda : self.manager.root.move_focus(self.commit_message_box))
         repo_control_widget_set.add_key_command(py_cui.keys.KEY_I_LOWER, lambda : self.info_text_block.set_text(self.manager.get_about_info()))
 
@@ -239,7 +259,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
 
         self.info_text_block.set_text(self.manager.get_about_info())
         self.branch_menu_state = 'branches'
-        self.manager.root.set_status_bar_text('Return - Bcksp | Menu - m | Refresh - r | Add All - a | Log - l | Editor - e | Pull - f | Push - p | Commit - c')
+        self.manager.root.set_status_bar_text('Return - Bcksp | Menu - m | Refresh - r | Add All - a | Commit - c | Log - l | Editor - e | Pull - f | Push - p')
 
 
     def refresh_status(self):
@@ -719,3 +739,78 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
             out, err = pyautogit.commands.git_checkout_commit(commit_hash)
             self.show_command_result(out, err, command_name='Commit Checkout', success_message='Checked Out Commit {}'.format(commit_hash), error_message='Failed To Checkout Commit')
             self.refresh_status()
+
+
+
+    #-------------------------------------------------------#
+    # HELP MESSAGE PRINT FUNCTIONS                          #
+    #-------------------------------------------------------#
+
+
+    def show_help_overview(self):
+        """Function that displays help message for overview mode.
+        """
+
+        help_message = '\n'
+        help_message = help_message + 'Welcome to the repository control screen.\nYou are currently in overview mode.\n'
+        help_message = help_message + '\nIn overview mode, use the arrow keys to move between widgets.\nUse the Enter key to enter a menu or text field, and "m" to open a popup menu.\n'
+        help_message = help_message + '\nTo return to the workspace screen, press Backspace.\nTo create a new commit, either use "a" to add all, or enter the add-files\n'
+        help_message = help_message + 'menu to select individual files.\nThen, navigate to the commit message box to add a commit message.\n'
+        help_message = help_message + 'You can automatically enter the commit message box from overview mode by pressing "c".\n'
+        help_message = help_message + '\nIn addition, to refresh the window based on changes made outside of pyautogit, press "r".\n'
+        help_message = help_message + '\nTo show help information for a specific submenu, enter it, and press "h".\n'
+        self.info_text_block.title = 'Repo Control Overview Help'
+        self.info_text_block.set_text(help_message)
+
+
+    def show_help_add_files_menu(self):
+        """Function that displays help message for the add files menu.
+        """
+
+        help_message = '\n'
+        help_message = help_message + 'Your currently selected menu is the add files menu.\n'
+        help_message = help_message + '\nFrom here, use the arrow keys to scroll, Enter to stage and unstage files for commit.\n'
+        help_message = help_message + '\nIf you would like to edit a file, press "e".\nThis will open the internal editor or if specified an external one.\n'
+        help_message = help_message + '\nPressing the Space button will display git diff information for the selected file, if any.\n'
+        help_message = help_message + '\nTo return to overview mode, press Escape.\n'
+        self.info_text_block.title = 'Add Files Menu Help'
+        self.info_text_block.set_text(help_message)
+
+    
+    def show_help_remotes_menu(self):
+        """Function that displays help message for the add files menu.
+        """
+
+        help_message = '\n'
+        help_message = help_message + 'You have selected the remotes menu.\n\nFrom here, press Enter to show remote info, Delete to delete the remote,\n'
+        help_message = help_message + '"n" to create a new remote, and Escape to return to overview mode.\n'
+        self.info_text_block.title = 'Remotes Menu Help'
+        self.info_text_block.set_text(help_message)
+
+
+    def show_help_branch_menu(self):
+        """Function that displays help message for the add files menu.
+        """
+
+        help_message = '\n'
+        help_message = help_message + 'This is the branch/tags menu. Use this in combination with the below textbox to\n'
+        help_message = help_message + 'control and create new branches or tags. To swap to seeing tags, press "t", and press "b"\n'
+        help_message = help_message + 'to go back to viewing branches.\n'
+        help_message = help_message + '\nTo create a new branch/tag, select the appropriate mode, and enter the name into the textbox.\n'
+        help_message = help_message + '\nTo checkout a branch/tag select it and press enter.\nTo show a log or tree for the branch, press Space or Tab.\n'
+        help_message = help_message + '\n To merge two branches together, checkout one and select another and press "m".\nThis will merge the selected one into the checked out one.\n'
+        help_message = help_message + '\nTo return to overview mode, press Escape.\n'
+        self.info_text_block.title = 'Branch/Tag Menu Help'
+        self.info_text_block.set_text(help_message)
+
+
+    def show_help_commits_menu(self):
+        """Function that displays help message for the add files menu.
+        """
+
+        help_message = '\n'
+        help_message = help_message + 'This is the commits menu. You can check out individual commits and show commit info.\n'
+        help_message = help_message + '\nTo check out a commit, select it and press Space, to show info, select and press Enter\n'
+        help_message = help_message + '\nTo return to overview mode, press Escape.\n'
+        self.info_text_block.title = 'Commits Menu Help'
+        self.info_text_block.set_text(help_message)

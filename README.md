@@ -4,13 +4,13 @@ A command line interface for working with git written in python with the help of
 
 ### Installation
 
-An obvious prerequisit to installing `pyautogit` is to have `git` installed an in your system path. Once this is done, you may install the module.
+An obvious prerequisit to installing `pyautogit` is to have `git` installed and in your system path. Once this is done, you may install the module.
 
 To install `pyautogit`, it is recommended to use `pip`:
 ```
 pip install pyautogit
 ```
-This will also install `py_cui`, the Command Line UI builder library upon which the project is based, and `windows-curses` on windows systems, which is required for `py_cui` on windows machines.
+This will also install `py_cui`, the Command Line UI builder library upon which the project is based, and `windows-curses` if running on windows, which is a `curses` emulator for the win32 platform.
 
 Alternatively, you can install from source. Clone this repository and use `pip` to install:
 ```
@@ -35,7 +35,7 @@ Note that you may require root access for installing with `pip` depending on you
 
 ### Usage
 
-Once `pyautogit` is installed, open a command line client (note that Windows Terminal is not supported), then navigate to a directory and type:
+Once `pyautogit` is installed, open a command line client (note that Windows Terminal is not yet supported), then navigate to a directory and type:
 ```
 pyautogit
 ```

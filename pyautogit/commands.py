@@ -632,6 +632,27 @@ def git_checkout_branch(branch):
     return handle_basic_command(command, name)
 
 
+def git_checkout_tag(tag):
+    """Checks out given tag
+
+    Parameters
+    ----------
+    tag : str
+        Name of tag to check out
+    
+    Returns
+    -------
+    out : str
+        Output string from stdout if success, stderr if failure
+    err : int
+        Error code if failure, 0 otherwise.
+    """
+
+    command = 'git checkout -q {}'.format(tag)
+    name = 'git_checkout_tag'
+    return handle_basic_command(command, name)
+
+
 def git_merge_branches(merge_branch):
     """Merges checked out branch with given branch
 

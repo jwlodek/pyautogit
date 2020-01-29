@@ -331,7 +331,9 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         out, err = pyautogit.commands.git_get_tags()
         self.show_command_result(out, err, show_on_success=False, command_name="List Tags", error_message="Cannot list git tags")
         self.branch_menu.clear()
-        self.branch_menu.add_item_list(out.splitlines())
+        tags = out.splitlines()
+        tags.reverse()
+        self.branch_menu.add_item_list(tags)
 
 
     def show_remote_info(self):
@@ -624,7 +626,8 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         self.message, self.status = pyautogit.commands.git_pull_branch(branch, remote, self.manager.credentials)
         self.refresh_status()
         self.manager.root.stop_loading_popup()
-    
+
+
     def push_repo_branch(self):
         """Pushes to remote
         """
@@ -659,10 +662,21 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         """
 
         branch = self.branch_menu.get()
-        if branch is not None:
+        if branch.startswith('* '):
+            self.manager.root.show_warning_popup('Warning', 'The selected branch is already checked out!')
+            return
+        if branch is not None and self.branch_menu_state == 'branches':
             branch = branch[2:]
+            if branch.startswith('(HEAD'):
+                self.manager.root.show_warning_popup('Warning', 'Cannot checkout detached head!')
+                return
             out, err = pyautogit.commands.git_checkout_branch(branch)
             self.show_command_result(out, err, command_name='Branch Checkout', success_message='Checked Out Branch {}'.format(branch), error_message='Failed To Checkout Branch')
+            self.refresh_status()
+        elif branch is not None:
+            out, err = pyautogit.commands.git_checkout_tag(branch)
+            self.show_command_result(out, err, command_name='Tag Checkout', success_message='Checked Out Tag {}'.format(branch), error_message='Failed To Checkout Tag')
+            self.show_branches()
             self.refresh_status()
 
 
@@ -683,7 +697,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
             merge_branch = merge_branch[2:]
             out, err = pyautogit.commands.git_merge_branches(merge_branch)
             self.refresh_status()
-            self.show_command_result(out, err, command_name='Merging Branches', success_message='Merged With {}'.format(merge_branch), error_message='Failed to Merge Branch')
+            self.show_command_result(out, err, command_name='Merging Branches', success_message='Merged With {}'.format(merge_branch), error_message='Failed To Merge Branch')
 
 
     def revert_merge(self):

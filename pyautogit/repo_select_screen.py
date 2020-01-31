@@ -43,7 +43,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
                                 'Open Directory',
                                 'Clone New Repository',
                                 'Create New Repository',
-                                'Select Text Editor',
+                                'Settings',
                                 'Enter Custom Command',
                                 'Exit']
 
@@ -68,8 +68,8 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
             self.manager.root.move_focus(self.manager.clone_new_box)
         elif selection == 'Create New Repository':
             self.manager.root.move_focus(self.manager.create_new_box)
-        elif selection == 'Select Text Editor':
-            self.manager.ask_default_editor()
+        elif selection == 'Settings':
+            self.manager.open_settings_window()
         elif selection == 'Enter Custom Command':
             self.ask_custom_command()
         elif selection == 'Exit':
@@ -101,6 +101,11 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         self.repo_menu.add_key_command(py_cui.keys.KEY_ENTER,   self.manager.open_autogit_window)
         self.repo_menu.add_key_command(py_cui.keys.KEY_SPACE,   self.show_repo_status)
         self.repo_menu.add_key_command(py_cui.keys.KEY_DELETE,  self.ask_delete_repo)
+        self.repo_menu.add_key_command(py_cui.keys.KEY_R_LOWER, self.refresh_status)
+        self.repo_menu.add_key_command(py_cui.keys.KEY_M_LOWER, self.show_menu)
+        self.repo_menu.add_key_command(py_cui.keys.KEY_Q_LOWER, self.manager.clean_exit)
+        self.repo_menu.add_key_command(py_cui.keys.KEY_S_LOWER, self.manager.open_settings_window)
+        self.repo_menu.set_focus_text('Quit - q | Open Repo - Enter | Status - Space | Menu - m | Refresh - r | Delete Repo - Del | Settings - s')
 
         self.git_status_box = repo_select_widget_set.add_text_block('Git Repo Status', 1, 0, row_span=4, column_span=2)
         self.git_status_box.is_selectable = False
@@ -121,12 +126,14 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         repo_select_widget_set.add_key_command(py_cui.keys.KEY_M_LOWER, self.show_menu)
         repo_select_widget_set.add_key_command(py_cui.keys.KEY_E_LOWER, self.manager.ask_default_editor)
         repo_select_widget_set.add_key_command(py_cui.keys.KEY_A_LOWER, lambda : self.git_status_box.set_text(self.manager.get_about_info()))
+        repo_select_widget_set.add_key_command(py_cui.keys.KEY_H_LOWER, lambda : self.git_status_box.set_text(self.manager.get_welcome_text()))
+
         self.info_panel = self.git_status_box
 
         self.refresh_status()
         return repo_select_widget_set
 
-    
+
     def clear_elements(self):
         """Override of base class function, clears text fields
         """
@@ -152,6 +159,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         """Function that refreshes the repositories in the selection screen
         """
 
+        LOGGER.write('Refreshing repo select status')
         self.manager.repos = pyautogit.find_repos_in_path(self.manager.workspace_path)
         self.repo_menu.clear()
         self.repo_menu.add_item_list(self.manager.repos)
@@ -172,6 +180,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
     def ask_delete_repo(self):
         """Function that asks user for confirmation for repo deletion
         """
+
         target = self.repo_menu.get()
         self.manager.root.show_yes_no_popup("Are you sure you want to delete {}?".format(target), self.delete_repo)
 
@@ -187,6 +196,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
 
         if to_delete:
             target = self.repo_menu.get()
+            LOGGER.write('Deleting repository {}'.format(target))
             pyautogit.commands.remove_repo_tree(target)
             self.refresh_status()
 
@@ -197,6 +207,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
 
         current_repo = self.repo_menu.selected_item
         repo_name = self.repo_menu.get()
+        LOGGER.write('Displaying repo status for {}'.format(repo_name))
         self.git_status_box.clear()
         out, err = pyautogit.commands.git_status(repo_name)
         if err != 0:
@@ -212,6 +223,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         """
 
         new_repo_url = self.clone_new_box.get()
+        LOGGER.write('Cloning new repo {}'.format(new_repo_url))
         self.message, self.status = pyautogit.commands.git_clone_new_repo(new_repo_url, self.manager.credentials)
         self.refresh_status()
         self.clone_new_box.clear()

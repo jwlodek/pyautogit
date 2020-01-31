@@ -192,6 +192,24 @@ class PyAutogitManager:
         LOGGER.close_logger()
 
 
+    def clean_exit(self):
+        """Function that exits the CUI cleanly
+        """
+
+        LOGGER.write('Exiting pyautogit.')
+        self.close_cleanup()
+        exit()
+
+
+    def error_exit(self):
+        """Function that exits the CUI with an error code
+        """
+
+        LOGGER.write('Exiting with error!')
+        self.close_cleanup()
+        exit(-1)
+
+
     def open_not_supported_popup(self, operation):
         """Function that displays warning for a non-supported operation
 
@@ -226,6 +244,7 @@ class PyAutogitManager:
         """Function that opens a repo control window given a target location
         """
 
+        LOGGER.write('Opening autogit control window on target dir.')
         self.repo_select_manager.clear_elements()
         self.repo_control_manager.set_initial_values()
         self.root.apply_widget_set(self.repo_control_widget_set)
@@ -248,8 +267,8 @@ class PyAutogitManager:
             os.chdir('..')
         self.current_state = 'workspace'
         self.root.set_title('pyautogit v{} - {}'.format(__version__, os.path.basename(os.getcwd())))
-        self.root.move_focus(self.repo_select_manager.repo_menu)
         self.repo_select_manager.refresh_status()
+        self.root.move_focus(self.repo_select_manager.repo_menu)
 
 
     def open_settings_window(self):
@@ -269,15 +288,18 @@ class PyAutogitManager:
         """Function that opens an editor window
         """
 
+        LOGGER.write('Opening Editor Window')
         self.editor_manager.open_new_directory_external(os.getcwd())
         self.editor_manager.set_initial_values()
         self.root.apply_widget_set(self.editor_widget_set)
         self.current_state == 'editor'
         self.editor_manager.refresh_status()
     
+
     #-------------------------------------------
     # Credential handler functions
     #-------------------------------------------
+
 
     def update_password(self, passwd):
         """Function called once password is entered. 

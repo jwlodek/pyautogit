@@ -110,6 +110,7 @@ def handle_basic_command(command, name, remove_quotes=True):
     else:
         run_command = command.split(' ')
     try:
+        LOGGER.write('Executing command: {}'.format(str(run_command)))
         proc = Popen(run_command, stdout=PIPE, stderr=PIPE)
         output, error = proc.communicate()
         if proc.returncode != 0:
@@ -143,6 +144,7 @@ def handle_open_external_program_command(command, name):
 
     run_command = command.split(' ')
     try:
+        LOGGER.write('Opening external program with: {}'.format(str(run_command)))
         proc = Popen(run_command, stdout=PIPE, stderr=PIPE)
         out, err_messg = proc.communicate()
         err = proc.returncode

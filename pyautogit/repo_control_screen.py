@@ -741,7 +741,6 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
             self.refresh_status()
 
 
-
     #-------------------------------------------------------#
     # HELP MESSAGE PRINT FUNCTIONS                          #
     #-------------------------------------------------------#

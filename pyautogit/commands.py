@@ -613,6 +613,26 @@ def git_create_new_branch(branch, checkout=True):
     return handle_basic_command(command, name)
 
 
+def git_delete_branch(branch):
+    """Deletes existing git branch
+
+    Parameters
+    ----------
+    branch : str
+        Name of branch to delete
+    
+    Returns
+    -------
+    out : str
+        Output string from stdout if success, stderr if failure
+    err : int
+        Error code if failure, 0 otherwise.
+    """
+    command = 'git branch -d {}'.format(branch)
+    name = 'git_delete_branch'
+    return handle_basic_command(command, name)
+
+
 def git_checkout_branch(branch):
     """Checks out given branch
 

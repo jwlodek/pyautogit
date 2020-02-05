@@ -210,6 +210,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         self.branch_menu.add_key_command(py_cui.keys.KEY_M_LOWER,   self.merge_branches)
         self.branch_menu.add_key_command(py_cui.keys.KEY_U_LOWER,   self.revert_merge)
         self.branch_menu.add_key_command(py_cui.keys.KEY_H_LOWER,   self.show_help_branch_menu)
+        self.branch_menu.add_key_command(py_cui.keys.KEY_DELETE,    self.delete_branch)
         self.branch_menu.set_focus_text('Checkout - Enter | Log - Space | New - n | Merge - m | Show Tags - t | Show Branches - b | Revert Merge - u | Help - h | Esc - Return')
 
         # Shows list of recent git commits for checked out branch.
@@ -674,6 +675,24 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
                 self.manager.show_error_popup('Failed to create branch', out)
             self.manager.root.lose_focus()
             self.new_branch_textbox.clear()
+            self.refresh_status()
+
+
+    def delete_branch(self):
+        """Deletes selected branch
+        """
+
+        branch_name = self.branch_menu.get()
+        if branch_name.startswith('* '):
+            self.manager.root.show_error_popup('ERROR - Branch Checked Out', 'You cannot delete the currently checked out branch!')
+        elif self.branch_menu_state == 'tags':
+            self.manager.root.show_error_popup('ERROR - Tag Menu Open', 'Please open branch menu to delete branches.')
+        elif branch_name[2:].startswith('(HEAD'):
+            self.manager.root.show_warning_popup('Warning', 'Cannot delete detached head!')
+            return
+        else:
+            out, err = pyautogit.commands.git_delete_branch(branch_name[2:])
+            self.show_command_result(out, err, command_name='Delete Branch', success_message='Deleted Branch {}'.format(branch_name[2:]), error_message='Failed To Delete Branch')
             self.refresh_status()
 
 

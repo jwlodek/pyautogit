@@ -1,8 +1,6 @@
-"""File containing entry point for pyautogit, as well as a top level class for managing the program.
+"""Main pyautogit manager class and entry point 
 
-It also contains some helper functions and argument parsing.
-
-Author: Jakub Wlodek
+Author: Jakub Wlodek  
 Created: 01-Oct-2019
 """
 
@@ -31,6 +29,127 @@ import pyautogit.metadata_manager as METADATA
 # Module version + copyright
 __version__     = '0.0.2'
 __copyright__   = '2019-2020'
+
+
+# Helper pyautogit functions
+
+def find_repos_in_path(path):
+    """Helper function that finds repositories in the path
+
+    Parameters
+    ----------
+    path : str
+        Target path
+    
+    Returns
+    -------
+    repos : list of str
+        list of git repositories within target
+    """
+
+    repos = []
+    for dir in os.listdir(path):
+        new_dir = os.path.join(path, dir)
+        if os.path.isdir(new_dir) and is_git_repo(new_dir):
+            repos.append(os.path.basename(new_dir))
+
+    LOGGER.write('Found repos in path: {}'.format(repos))
+
+    return repos
+
+
+def is_git_repo(path):
+    """Simple function that checks if a given path is a git repository
+
+    Parameters
+    ----------
+    path : str
+        path to check
+    
+    Returns
+    -------
+    is_repo : bool
+        True if .git exists, False otherwise
+    """
+
+    is_repo = False
+    if os.path.exists(os.path.join(path, '.git')):
+        is_repo = True
+    return is_repo
+
+
+def parse_args():
+    """Function that parses user arguments for pyautogit
+
+    Returns
+    -------
+    target_repo : str
+        The target path for pyautogit
+    save_metadata : bool
+        flag to say if metadata should be saved
+    credentials : list of str
+        username, password, if entered
+    """
+
+    target_repo = '.'
+    credentials = []
+
+    parser = argparse.ArgumentParser(description="A command line interface for git commands.")
+    parser.add_argument('-c', '--credentials', action='store_true', help='Allows user to enter credentials once when pyautogit is started.')
+    parser.add_argument('-w', '--workspace', help='Pass a path to this argument to start pyautogit in a workspace not the current directory.')
+    parser.add_argument('-n', '--nosavemetadata', action='store_true', help='Add this flag if you would like pyautogit to not save metadata between sessions.')
+    args = vars(parser.parse_args())
+    if args['credentials']:
+        user = input('Please enter your github/gitlab username > ')
+        credentials.append(user)
+        passwd = getpass.getpass(prompt="Please enter your github/gitlab password > ")
+        credentials.append(passwd)
+    if args['workspace'] is not None:
+        if os.path.exists(args['workspace']):
+            if os.path.isdir(args['workspace']):
+                os.chdir(args['workspace'])
+            else:
+                print('ERROR - Path {} is not a directory.'.format(args['workspace']))
+                exit(-1)
+        else:
+            print('ERROR - Path {} does not exist.'.format(args['workspace']))
+            exit(-1)
+
+    return target_repo, not args['nosavemetadata'], credentials
+
+
+def main():
+    """Entry point for pyautogit. Parses arguments, and initializes the CUI
+    """
+
+    target, save_metadata, credentials = parse_args()
+
+    target_abs = os.path.abspath(target)
+
+    input_type = 'repo'
+    if not is_git_repo(target):
+        input_type = 'workspace'
+
+    # Make sure we have write permissions
+    if not os.access(target, os.W_OK):
+        print('ERROR - Permission error for target {}'.format(target_abs))
+        exit(-1)
+    if input_type == 'repo' and not os.access(os.path.dirname(target_abs), os.W_OK):
+        print('ERROR - Permission denied for parent workspace {} of repository {}'.format(os.path.dirname(target_abs), target_abs))
+        exit(-1)
+
+
+    root = py_cui.PyCUI(5, 4)
+    manager = PyAutogitManager(root, target, input_type, save_metadata, credentials)
+    
+    LOGGER.write('Parsed args. Target location - {}'.format(target))
+    LOGGER.write('Initial state - {}'.format(input_type))
+    LOGGER.write('Initialized manager object, starting CUI...')
+
+    root.start()
+
+
+# Main pyautogit mananger class
 
 
 class PyAutogitManager:
@@ -87,7 +206,7 @@ class PyAutogitManager:
     commit_message_box : py_cui.widgets.TextBox
         Textbox for entering new commit messages
     repo_control_manager : RepoControlManager
-        Manager wrapper for repo control screen.
+        Manager wrapper for repo control screen
 
     Methods
     -------
@@ -222,7 +341,6 @@ class PyAutogitManager:
         self.root.show_warning_popup('Warning - Not Supported', 'The {} operation is not yet supported.'.format(operation))
 
 
-
     def open_autogit_window(self):
         """Function that opens the repository control window.
         """
@@ -252,9 +370,7 @@ class PyAutogitManager:
 
 
     def open_repo_select_window(self):
-        """Function that opens the repository select window.
-
-        Fired when the backspace key is pressed in the repository control window
+        """Opens the repo select window. Fired when the backspace key is pressed in the repo control window
         """
 
         LOGGER.write('Opening repo select window')
@@ -321,9 +437,7 @@ class PyAutogitManager:
 
 
     def ask_password(self, user):
-        """Function that opens popup and asks for password.
-
-        Also writes username to credentials
+        """Function that opens popup and asks for password. Also writes username to credentials.
 
         Parameters
         ----------
@@ -499,123 +613,3 @@ class PyAutogitManager:
         welcome = welcome + '\nIf you encounter issues, please make a ticket on the github page,\nand if you enjoy pyautogit,'
         welcome = welcome + 'feel free to give\nit a star or a sponsorship.\n\nIf you would like to contribute, feel free to do so as well!'
         return welcome
-
-
-# Helper pyautogit functions
-
-def find_repos_in_path(path):
-    """Helper function that finds repositories in the path
-
-    Parameters
-    ----------
-    path : str
-        Target path
-    
-    Returns
-    -------
-    repos : list of str
-        list of git repositories within target
-    """
-
-    repos = []
-    for dir in os.listdir(path):
-        new_dir = os.path.join(path, dir)
-        if os.path.isdir(new_dir) and is_git_repo(new_dir):
-            repos.append(os.path.basename(new_dir))
-
-    LOGGER.write('Found repos in path: {}'.format(repos))
-
-    return repos
-
-
-def is_git_repo(path):
-    """Simple function that checks if a given path is a git repository.
-    
-    Note that all it does is check for the .git folder
-
-    Parameters
-    ----------
-    path : str
-        path to check
-    
-    Returns
-    -------
-    is_repo : bool
-        True if .git exists, False otherwise
-    """
-
-    is_repo = False
-    if os.path.exists(os.path.join(path, '.git')):
-        is_repo = True
-    return is_repo
-
-
-def parse_args():
-    """Function that parses user arguments for pyautogit
-
-    Returns
-    -------
-    target_repo : str
-        The target path for pyautogit
-    save_metadata : bool
-        flag to say if metadata should be saved
-    credentials : list of str
-        username, password, if entered
-    """
-
-    target_repo = '.'
-    credentials = []
-
-    parser = argparse.ArgumentParser(description="A command line interface for git commands.")
-    parser.add_argument('-c', '--credentials', action='store_true', help='Allows user to enter credentials once when pyautogit is started.')
-    parser.add_argument('-w', '--workspace', help='Pass a path to this argument to start pyautogit in a workspace not the current directory.')
-    parser.add_argument('-n', '--nosavemetadata', action='store_true', help='Add this flag if you would like pyautogit to not save metadata between sessions.')
-    args = vars(parser.parse_args())
-    if args['credentials']:
-        user = input('Please enter your github/gitlab username > ')
-        credentials.append(user)
-        passwd = getpass.getpass(prompt="Please enter your github/gitlab password > ")
-        credentials.append(passwd)
-    if args['workspace'] is not None:
-        if os.path.exists(args['workspace']):
-            if os.path.isdir(args['workspace']):
-                os.chdir(args['workspace'])
-            else:
-                print('ERROR - Path {} is not a directory.'.format(args['workspace']))
-                exit(-1)
-        else:
-            print('ERROR - Path {} does not exist.'.format(args['workspace']))
-            exit(-1)
-
-    return target_repo, not args['nosavemetadata'], credentials
-
-
-def main():
-    """Entry point for pyautogit. Parses arguments, and initializes the CUI
-    """
-
-    target, save_metadata, credentials = parse_args()
-
-    target_abs = os.path.abspath(target)
-
-    input_type = 'repo'
-    if not is_git_repo(target):
-        input_type = 'workspace'
-
-    # Make sure we have write permissions
-    if not os.access(target, os.W_OK):
-        print('ERROR - Permission error for target {}'.format(target_abs))
-        exit(-1)
-    if input_type == 'repo' and not os.access(os.path.dirname(target_abs), os.W_OK):
-        print('ERROR - Permission denied for parent workspace {} of repository {}'.format(os.path.dirname(target_abs), target_abs))
-        exit(-1)
-
-
-    root = py_cui.PyCUI(5, 4)
-    manager = PyAutogitManager(root, target, input_type, save_metadata, credentials)
-    
-    LOGGER.write('Parsed args. Target location - {}'.format(target))
-    LOGGER.write('Initial state - {}'.format(input_type))
-    LOGGER.write('Initialized manager object, starting CUI...')
-
-    root.start()

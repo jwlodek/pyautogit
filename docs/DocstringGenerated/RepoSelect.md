@@ -22,7 +22,10 @@ Class representing the manager for the repo select scree.
 | method    | Doc             |
 |:-------|:----------------|
 | process_menu_selection | Override of base class, executes depending on menu selectio. | 
-| initialize_screen_elements | Function that refreshes the repositories in the selection scree. | 
+| initialize_screen_elements | Override of base function. Initializes widgets, returns screen widget se. | 
+| clear_elements | Override of base class function, clears text field. | 
+| set_initial_values | Override of base function. Sets some initial text for the widget. | 
+| refresh_status | Function that refreshes the repositories in the selection scree. | 
 | ask_delete_repo | Function that asks user for confirmation for repo deletio. | 
 | delete_repo | Function that deletes a rep. | 
 | show_repo_status | Function that shows the current repository statu. | 
@@ -49,6 +52,38 @@ Override of base class, executes depending on menu selectio.
 
 ``` python 
     initialize_screen_elements() 
+```
+
+
+Override of base function. Initializes widgets, returns screen widget se.
+
+| Returns    | Type             | Doc             |
+|:-------|:-----------------|:----------------|
+|         repo_select_widget_set | py_cui.widget_set.WidgetSet |             Widget set object for repo select screen | 
+
+
+### clear_elements
+
+``` python 
+    clear_elements() 
+```
+
+
+Override of base class function, clears text field.
+
+### set_initial_values
+
+``` python 
+    set_initial_values() 
+```
+
+
+Override of base function. Sets some initial text for the widget.
+
+### refresh_status
+
+``` python 
+    refresh_status() 
 ```
 
 

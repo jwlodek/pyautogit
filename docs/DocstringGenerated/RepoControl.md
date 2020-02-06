@@ -33,15 +33,22 @@ the pyautogit.commands module.
 | method    | Doc             |
 |:-------|:----------------|
 | process_menu_selection | Override of base class, executes based on user menu selectio. | 
-| initialize_screen_elements | Function that refreshes a git repository statu. | 
+| initialize_screen_elements | Function that initializes the widgets for the repo control screen. Override of base class functio. | 
+| clear_elements | Function that clears elements of repo control windo. | 
+| set_initial_values | Function that initializes status bar and info text for repo control windo. | 
+| refresh_status | Function that refreshes a git repository statu. | 
 | get_repo_status_short | Gets shorthand repository statu. | 
 | get_repo_remotes | Gets list of repository remote. | 
+| show_branches | Function that swaps to showing branche. | 
 | get_repo_branches | Gets list of repository branche. | 
+| show_tags | Function that swaps to showing tag. | 
+| get_repo_tags | Gets list of repository tag. | 
 | show_remote_info | Gets info about remot. | 
 | show_commit_info | Gets info about a particular commi. | 
 | get_recent_commits | Gets list of recent commits to branc. | 
 | create_new_tag | Creates a new ta. | 
 | show_log | Displays the git lo. | 
+| show_tree | Displays git log as a tre. | 
 | stash_all_changes | Stashes all repo change. | 
 | unstash_all_changes | Pops the stas. | 
 | open_git_diff | Opens current git diff stat. | 
@@ -59,10 +66,16 @@ the pyautogit.commands module.
 | pull_repo_branch | Pulls from remot. | 
 | push_repo_branch | Pushes to remot. | 
 | create_new_branch | Creates new branch for repositor. | 
+| delete_branch | Deletes selected branc. | 
 | checkout_branch | Checks out specified branc. | 
 | merge_branches | Merges selected branch into the currently checked out branc. | 
 | revert_merge | Undos the merge that was just performe. | 
 | checkout_commit | Checks out specified commi. | 
+| show_help_overview | Function that displays help message for overview mode. | 
+| show_help_add_files_menu | Function that displays help message for the add files menu. | 
+| show_help_remotes_menu | Function that displays help message for the add files menu. | 
+| show_help_branch_menu | Function that displays help message for the add files menu. | 
+| show_help_commits_menu | Function that displays help message for the add files menu. | 
  
  
 
@@ -87,6 +100,38 @@ Override of base class, executes based on user menu selectio.
 ```
 
 
+Function that initializes the widgets for the repo control screen. Override of base class functio.
+
+| Returns    | Type             | Doc             |
+|:-------|:-----------------|:----------------|
+|         repo_control_widget_set | py_cui.widget_set.WidgetSet |             Widget set object for repo control screen | 
+
+
+### clear_elements
+
+``` python 
+    clear_elements() 
+```
+
+
+Function that clears elements of repo control windo.
+
+### set_initial_values
+
+``` python 
+    set_initial_values() 
+```
+
+
+Function that initializes status bar and info text for repo control windo.
+
+### refresh_status
+
+``` python 
+    refresh_status() 
+```
+
+
 Function that refreshes a git repository statu.
 
 ### get_repo_status_short
@@ -107,6 +152,15 @@ Gets shorthand repository statu.
 
 Gets list of repository remote.
 
+### show_branches
+
+``` python 
+    show_branches() 
+```
+
+
+Function that swaps to showing branche.
+
 ### get_repo_branches
 
 ``` python 
@@ -115,6 +169,24 @@ Gets list of repository remote.
 
 
 Gets list of repository branche.
+
+### show_tags
+
+``` python 
+    show_tags() 
+```
+
+
+Function that swaps to showing tag.
+
+### get_repo_tags
+
+``` python 
+    get_repo_tags() 
+```
+
+
+Gets list of repository tag.
 
 ### show_remote_info
 
@@ -160,6 +232,15 @@ Creates a new ta.
 
 
 Displays the git lo.
+
+### show_tree
+
+``` python 
+    show_tree() 
+```
+
+
+Displays git log as a tre.
 
 ### stash_all_changes
 
@@ -324,6 +405,15 @@ Pushes to remot.
 
 Creates new branch for repositor.
 
+### delete_branch
+
+``` python 
+    delete_branch() 
+```
+
+
+Deletes selected branc.
+
 ### checkout_branch
 
 ``` python 
@@ -359,3 +449,48 @@ Undos the merge that was just performe.
 
 
 Checks out specified commi.
+
+### show_help_overview
+
+``` python 
+    show_help_overview() 
+```
+
+
+Function that displays help message for overview mode.
+
+### show_help_add_files_menu
+
+``` python 
+    show_help_add_files_menu() 
+```
+
+
+Function that displays help message for the add files menu.
+
+### show_help_remotes_menu
+
+``` python 
+    show_help_remotes_menu() 
+```
+
+
+Function that displays help message for the add files menu.
+
+### show_help_branch_menu
+
+``` python 
+    show_help_branch_menu() 
+```
+
+
+Function that displays help message for the add files menu.
+
+### show_help_commits_menu
+
+``` python 
+    show_help_commits_menu() 
+```
+
+
+Function that displays help message for the add files menu.

@@ -72,6 +72,39 @@ def handle_credential_command(command, credentials, target_location='.'):
     return out, err
 
 
+def parse_string_into_executable_command(command, remove_quotes):
+    """Function that takes in a string command, and parses it into a subprocess arg list
+
+    Parameters
+    ----------
+    command : str
+        The command as a string
+
+    Returns
+    -------
+    run_command : list of str
+        The command as a list of subprocess args
+    """
+
+    if '"' in command:
+        run_command = []
+        strings = re.findall('"[^"]*"', command)
+        non_strings = re.split('"[^"]*"', command)
+        for i in range(len(strings)):
+            run_command = run_command + non_strings[i].strip().split(' ')
+            string_in = strings[i]
+            if remove_quotes:
+                string_in = string_in[1:]
+                string_in = string_in[:(len(string_in) - 1)]
+            run_command.append(string_in)
+        if len(non_strings) == (len(strings) + 1) and len(non_strings[len(strings)]) > 0:
+            run_command.append(non_strings[len(strings) + 1])
+    else:
+        run_command = command.split(' ')
+
+    return run_command
+
+
 def handle_basic_command(command, name, remove_quotes=True):
     """Function that executes any git command given, and returns program output.
 
@@ -94,21 +127,8 @@ def handle_basic_command(command, name, remove_quotes=True):
 
     out = None
     err = 0
-    if '"' in command:
-        run_command = []
-        strings = re.findall('"[^"]*"', command)
-        non_strings = re.split('"[^"]*"', command)
-        for i in range(len(strings)):
-            run_command = run_command + non_strings[i].strip().split(' ')
-            string_in = strings[i]
-            if remove_quotes:
-                string_in = string_in[1:]
-                string_in = string_in[:(len(string_in) - 1)]
-            run_command.append(string_in)
-        if len(non_strings) == (len(strings) + 1) and len(non_strings[len(strings)]) > 0:
-            run_command.append(non_strings[len(strings) + 1])
-    else:
-        run_command = command.split(' ')
+
+    run_command = parse_string_into_executable_command(command, remove_quotes)
     try:
         LOGGER.write('Executing command: {}'.format(str(run_command)))
         proc = Popen(run_command, stdout=PIPE, stderr=PIPE)

@@ -194,7 +194,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         self.remotes_menu.add_key_command(py_cui.keys.KEY_ENTER, self.show_remote_info)
         self.remotes_menu.add_key_command(py_cui.keys.KEY_N_LOWER, self.ask_new_remote_name)
         self.remotes_menu.add_key_command(py_cui.keys.KEY_DELETE, self.delete_remote)
-        self.remotes_menu.add_key_command(py_cui.keys.KEY_R_LOWER, lambda : self.ask_message('Please enter a new remote name', callback=self.rename_remote))
+        self.remotes_menu.add_key_command(py_cui.keys.KEY_R_LOWER, lambda : self.manager.ask_message('Please enter a new remote name', callback=self.rename_remote))
         self.remotes_menu.add_key_command(py_cui.keys.KEY_H_LOWER, self.show_help_remotes_menu)
         self.remotes_menu.set_focus_text('Remote Info - Enter | New Remote - n | Delete Remote - Delete | Help - h | Return - Esc')
 

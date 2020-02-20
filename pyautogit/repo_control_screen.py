@@ -172,11 +172,11 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         # Textboxes for commit message and new branch/tag
         self.new_branch_textbox = repo_control_widget_set.add_text_box('New Branch', 8, 0, column_span=2)
         self.new_branch_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.create_new_branch)
-        self.new_branch_textbox.set_focus_text('Create New Branch - Enter | Help - h | Return - Esc')
+        self.new_branch_textbox.set_focus_text('Create New Branch - Enter | Return - Esc')
         
         self.commit_message_box = repo_control_widget_set.add_text_box('Commit Message', 8, 2, column_span=6)
         self.commit_message_box.add_key_command(py_cui.keys.KEY_ENTER, self.commit)
-        self.commit_message_box.set_focus_text('Commit Changes - Enter | Help - h | Return - Esc')
+        self.commit_message_box.set_focus_text('Commit Changes - Enter | Return - Esc')
 
         # Add/Unstage files menu. Shows current git status
         self.add_files_menu = repo_control_widget_set.add_scroll_menu('Add Files', 0, 0, row_span=2, column_span=2)

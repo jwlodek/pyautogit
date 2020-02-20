@@ -1,4 +1,9 @@
 """A subscreen that allows for setting a variety of pyautogit settings.
+
+Classes
+-------
+SettingsScreen
+    extends ScreenManager base, adds widgets for controlling pyautogit settings.
 """
 
 import os
@@ -9,10 +14,18 @@ import pyautogit
 import pyautogit.screen_manager
 import pyautogit.logger as LOGGER
 import urllib.request
+import urllib.error
 
 
 class SettingsScreen(pyautogit.screen_manager.ScreenManager):
     """Class representing settings subscreen for pyautogit
+
+    Attributes
+    ----------
+    current_info_log : str
+        The current settings log text
+    show_settings_log : bool
+        Toggle for showing settings log
 
     Methods
     -------
@@ -49,47 +62,51 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
             Widget set object for rsettings screen
         """
 
+        # Output widget set
         settings_widget_set = py_cui.widget_set.WidgetSet(9, 6)
         settings_widget_set.add_key_command(py_cui.keys.KEY_BACKSPACE, self.manager.open_repo_select_window)
+
+        # Logo and link labels
         logo_label = settings_widget_set.add_block_label(self.get_settings_ascii_art(), 0, 0, row_span=2, column_span=3, center=True)
         logo_label.set_standard_color(py_cui.RED_ON_BLACK)
         link_label = settings_widget_set.add_label('Settings Screen - pyautogit v{}'.format(pyautogit.__version__), 0, 3, row_span=2, column_span=3)
         link_label.add_text_color_rule('Settings Screen*', py_cui.CYAN_ON_BLACK, 'startswith', match_type='line')
 
+        # Logging settings
         debug_log_label = settings_widget_set.add_label('Debug Logging', 2, 0)
         debug_log_label.toggle_border()
         self.debug_log_toggle = settings_widget_set.add_button('Toggle Logs', 2, 1, command=self.toggle_logging)
         self.debug_enter_path_button = settings_widget_set.add_button('Set Log File', 2, 2, command=self.ask_log_file_path)
         self.debug_log_status_label = settings_widget_set.add_label('OFF - {}'.format(LOGGER._LOG_FILE_PATH), 3, 0, column_span=3)
-        #self.debug_log_status_label.toggle_border()
 
-
+        # Default editor settings
         editor_label = settings_widget_set.add_label('Default Editor', 4, 0)
         editor_label.toggle_border()
-        self.external_editor_toggle = settings_widget_set.add_button('External/Internal', 4, 1, command=self.toggle_editor_type)
-        self.external_editor_enter = settings_widget_set.add_button('Select Editor', 4, 2, command=self.ask_default_editor)
+        self.external_editor_toggle = settings_widget_set.add_button('External/Internal',   4, 1, command=self.toggle_editor_type)
+        self.external_editor_enter  = settings_widget_set.add_button('Select Editor',       4, 2, command=self.ask_default_editor)
         self.editor_status_label = settings_widget_set.add_label('{} - {}'.format(self.manager.editor_type, self.manager.default_editor), 5, 0, column_span=3)
         #self.editor_status_label.toggle_border()
 
-
+        # Program info settings
         about_label = settings_widget_set.add_label('About', 6, 0)
         about_label.toggle_border()
-        self.fetch_readme_file_button = settings_widget_set.add_button('README', 6, 1, command=lambda : self.fetch_about_file('README.md'))
-        self.fetch_authors_button = settings_widget_set.add_button('Authors', 6, 2, command=lambda : self.fetch_about_file('AUTHORS'))
+        self.fetch_readme_file_button   = settings_widget_set.add_button('README',          6, 1, command=lambda : self.fetch_about_file('README.md'))
+        self.fetch_authors_button       = settings_widget_set.add_button('Authors',         6, 2,  command=lambda : self.fetch_about_file('AUTHORS'))
+        self.fetch_license_button       = settings_widget_set.add_button('License',         7, 1, command=lambda : self.fetch_about_file('LICENSE'))
+        self.revert_settings_log_button = settings_widget_set.add_button('Settings Log',    7, 2, command=self.revert_settings_log)
 
-        self.fetch_license_button = settings_widget_set.add_button('License', 7, 1, command=lambda : self.fetch_about_file('LICENSE'))
-        self.revert_settings_log_button = settings_widget_set.add_button('Settings Log', 7, 2, command=self.revert_settings_log)
-
+        # Documentation settings
         docs_label = settings_widget_set.add_label('Docs', 8, 0)
         docs_label.toggle_border()
         self.show_tutorial_button = settings_widget_set.add_button('Tutorial', 8, 1, command=self.show_tutorial)
         self.open_web_docs_button = settings_widget_set.add_button('Online Docs', 8, 2, command=self.open_web_docs)
 
+        # Info panel
         self.settings_info_panel = settings_widget_set.add_text_block('Settings Info Log', 2, 3, row_span=7, column_span=3)
         self.settings_info_panel.is_selectable = False
         self.info_panel = self.settings_info_panel
 
-        if LOGGER._LOG_FILE_PATH is None:
+        if not LOGGER._LOG_ENABLED:
             self.update_log_file_path('.pyautogit/{}.log'.format(str(datetime.datetime.today()).split(' ')[0]), default_path=True)
         return settings_widget_set
 
@@ -116,7 +133,7 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
 
 
     def fetch_about_file(self, file):
-        """Function that grabs readme file and displays it
+        """Function that grabs file from github and displays it in info panel
 
         Parameters
         ----------
@@ -131,8 +148,11 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
         try:
             file_txt = ''
             for line in urllib.request.urlopen('https://raw.githubusercontent.com/jwlodek/pyautogit/master/{}'.format(file)):
-                file_txt = '{}\n{}'.format(file_txt, line.decode('utf-8'))
+                file_txt = '{}{}'.format(file_txt, line.decode('utf-8'))
             self.info_panel.set_text(file_txt)
+        except urllib.error.HTTPError:
+            self.revert_settings_log()
+            self.manager.root.show_error_popup('Http Error', 'Unable to fetch {} file - not found!'.format(file))
         except:
             self.revert_settings_log()
             self.manager.root.show_error_popup('Unknown Error', 'Unable to fetch {} file!'.format(file))
@@ -182,10 +202,10 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
             Block letter ascii art settings logo
         """
 
-        settings_message = ' ____  ____  ____  ____  __  __ _   ___   ____  \n '
-        settings_message = settings_message + '/ ___)(  __)(_  _)(_  _)(  )(  ( \ / __) / ___) \n'
-        settings_message = settings_message + '\___ \ ) _)   )(    )(   )( /    /( (_ \ \___ \ \n'
-        settings_message = settings_message + '(____/(____) (__)  (__) (__)\_)__) \___/ (____/ '
+        settings_message =                      ' ____  ____  ____  ____  __  __ _   ___   ____  \n '
+        settings_message = settings_message +   '/ ___)(  __)(_  _)(_  _)(  )(  ( \ / __) / ___) \n'
+        settings_message = settings_message +   '\___ \ ) _)   )(    )(   )( /    /( (_ \ \___ \ \n'
+        settings_message = settings_message +   '(____/(____) (__)  (__) (__)\_)__) \___/ (____/ '
         return settings_message
 
 

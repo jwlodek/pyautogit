@@ -105,7 +105,9 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         self.repo_menu.add_key_command(py_cui.keys.KEY_M_LOWER, self.show_menu)
         self.repo_menu.add_key_command(py_cui.keys.KEY_Q_LOWER, self.manager.clean_exit)
         self.repo_menu.add_key_command(py_cui.keys.KEY_S_LOWER, self.manager.open_settings_window)
-        self.repo_menu.set_focus_text('Quit - q | Open Repo - Enter | Status - Space | Menu - m | Refresh - r | Delete Repo - Del | Settings - s')
+        self.repo_menu.add_key_command(py_cui.keys.KEY_C_LOWER, self.manager.ask_credentials)
+        self.repo_menu.add_key_command(py_cui.keys.KEY_E_LOWER, self.manager.ask_default_editor)
+        self.repo_menu.set_focus_text('Quit - q | Open - Enter | Status - Space | Menu - m | Refresh - r | Delete - Del | Settings - s | Credentials - c | Editor - e')
 
         self.git_status_box = repo_select_widget_set.add_text_block('Git Repo Status', 1, 0, row_span=4, column_span=2)
         self.git_status_box.is_selectable = False
@@ -121,6 +123,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         self.create_new_box.add_key_command(py_cui.keys.KEY_ENTER, self.create_new_repo)
         
         repo_select_widget_set.add_key_command(py_cui.keys.KEY_S_LOWER, self.manager.open_settings_window)
+        #repo_select_widget_set.add_key_command(py_cui.keys.KEY_F_LOWER, self.sync_all_repos)
         repo_select_widget_set.add_key_command(py_cui.keys.KEY_R_LOWER, self.refresh_status)
         repo_select_widget_set.add_key_command(py_cui.keys.KEY_C_LOWER, self.manager.ask_credentials)
         repo_select_widget_set.add_key_command(py_cui.keys.KEY_M_LOWER, self.show_menu)

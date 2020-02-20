@@ -3,6 +3,7 @@
 
 import os
 import json
+import shutil
 import pyautogit
 import pyautogit.logger as LOGGER
 
@@ -45,9 +46,10 @@ class PyAutogitMetadataManager:
         if os.path.exists(settings_file):
             os.remove(settings_file)
         metadata = {}
-        metadata['EDITOR'] = self.manager.default_editor
-        metadata['VERSION'] = pyautogit.__version__
-        metadata['LOG_ENABLE'] = LOGGER._LOG_ENABLED
+        metadata['EDITOR']      = self.manager.default_editor
+        metadata['VERSION']     = pyautogit.__version__
+        metadata['LOG_ENABLE']  = LOGGER._LOG_ENABLED
+        LOGGER.write('Writing metadata: {}'.format(metadata))
         fp = open(settings_file, 'w')
         json.dump(metadata, fp)
         fp.close()
@@ -65,10 +67,12 @@ class PyAutogitMetadataManager:
             return
         if 'EDITOR' in metadata.keys():
             self.manager.default_editor = metadata['EDITOR']
+            self.manager.editor_type = 'External'
         if 'VERSION' in metadata.keys() and metadata['VERSION'] != pyautogit.__version__:
             self.manager.root.show_message_popup('PyAutogit Updated', 'Congratulations for updating to pyautogit {}! See patch notes on github.'.format(pyautogit.__version__))
         if 'LOG_ENABLE' in metadata.keys() and metadata['LOG_ENABLE']:
-            LOGGER.toggle_logger()
+            #LOGGER.toggle_logging()
+            pass
 
 
     def read_metadata(self):
@@ -87,6 +91,7 @@ class PyAutogitMetadataManager:
                 fp = open(settings_file, 'r')
                 metadata = json.load(fp)
                 fp.close()
+                LOGGER.write('Read metadata:{}'.format(metadata))
                 return metadata
             except json.decoder.JSONDecodeError:
                 shutil.rmtree(settings_dir)

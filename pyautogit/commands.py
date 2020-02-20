@@ -2,7 +2,7 @@
 
 This file should remain separate from the CUI interface.
 
-Author: Jakub Wlodek
+Author: Jakub Wlodek  
 Created: 01-Oct-2019
 """
 

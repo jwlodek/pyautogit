@@ -12,6 +12,7 @@ import os
 import shutil
 import subprocess
 import threading
+import datetime
 from subprocess import Popen, PIPE
 
 # py_cui library used for Command Line UI construction
@@ -95,9 +96,10 @@ def parse_args():
     credentials = []
 
     parser = argparse.ArgumentParser(description="A command line interface for git commands.")
-    parser.add_argument('-c', '--credentials', action='store_true', help='Allows user to enter credentials once when pyautogit is started.')
-    parser.add_argument('-w', '--workspace', help='Pass a path to this argument to start pyautogit in a workspace not the current directory.')
-    parser.add_argument('-n', '--nosavemetadata', action='store_true', help='Add this flag if you would like pyautogit to not save metadata between sessions.')
+    parser.add_argument('-c', '--credentials',      action='store_true', help='Allows user to enter credentials once when pyautogit is started.')
+    parser.add_argument('-w', '--workspace',        help='Pass a path to this argument to start pyautogit in a workspace not the current directory.')
+    parser.add_argument('-n', '--nosavemetadata',   action='store_true', help='Add this flag if you would like pyautogit to not save metadata between sessions.')
+    parser.add_argument('-d', '--debug',            action='store_true', help='Flag that enables debug logging by default.')
     args = vars(parser.parse_args())
     if args['credentials']:
         user = input('Please enter your github/gitlab username > ')
@@ -115,14 +117,16 @@ def parse_args():
             print('ERROR - Path {} does not exist.'.format(args['workspace']))
             exit(-1)
 
-    return target_repo, not args['nosavemetadata'], credentials
+    return target_repo, credentials, args
 
 
 def main():
     """Entry point for pyautogit. Parses arguments, and initializes the CUI
     """
 
-    target, save_metadata, credentials = parse_args()
+    target, credentials, args = parse_args()
+    save_metadata = not args['nosavemetadata']
+    debug_logging = args['debug']
 
     target_abs = os.path.abspath(target)
 
@@ -138,11 +142,18 @@ def main():
         print('ERROR - Permission denied for parent workspace {} of repository {}'.format(os.path.dirname(target_abs), target_abs))
         exit(-1)
 
+    if debug_logging:
+        if input_type=='repo':
+            LOGGER.set_log_file_path('../.pyautogit/{}.log'.format(str(datetime.datetime.today()).split(' ')[0]))
+        else:
+            LOGGER.set_log_file_path('.pyautogit/{}.log'.format(str(datetime.datetime.today()).split(' ')[0]))
+        LOGGER.toggle_logging()
+        LOGGER.write('Initialized debug logging')
 
     root = py_cui.PyCUI(5, 4)
     manager = PyAutogitManager(root, target, input_type, save_metadata, credentials)
     
-    LOGGER.write('Parsed args. Target location - {}'.format(target))
+    LOGGER.write('Parsed args. Target location - {}'.format(target_abs))
     LOGGER.write('Initial state - {}'.format(input_type))
     LOGGER.write('Initialized manager object, starting CUI...')
 
@@ -247,31 +258,36 @@ class PyAutogitManager:
         """
 
         self.root = root
-        self.repo_select_manager = SELECT.RepoSelectManager(self)
-        self.repo_control_manager = CONTROL.RepoControlManager(self)
-        self.settings_manager = SETTINGS.SettingsScreen(self)
-        self.editor_manager = EDITOR.EditorScreenManager(self, target_path)
-        LOGGER.write('Created subscreen managers.')
+        self.repo_select_manager    = SELECT.RepoSelectManager(self)
+        self.repo_control_manager   = CONTROL.RepoControlManager(self)
+        self.settings_manager       = SETTINGS.SettingsScreen(self)
+        self.editor_manager         = EDITOR.EditorScreenManager(self, target_path)
+        LOGGER.write('Initialized subscreen managers.')
 
         self.save_metadata = save_metadata
 
         # Make sure to convert to absolute path. If we opened a repository, the top path will be one level higher
-        self.current_path = os.path.abspath(target_path)
+        self.current_path   = os.path.abspath(target_path)
         self.workspace_path = self.current_path
         if current_state == 'repo':
             self.workspace_path = os.path.dirname(self.current_path)
         
         # Setup some helper objects and default information/variables
-        self.current_state = current_state
+        self.current_state  = current_state
         self.default_editor = None
-        self.editor_type = 'Internal'
+        self.editor_type    = 'Internal'
         
-        self.metadata_manager = METADATA.PyAutogitMetadataManager(self)
-        self.loaded_metadata = self.metadata_manager.read_metadata()
+        self.metadata_manager   = METADATA.PyAutogitMetadataManager(self)
+        self.loaded_metadata    = self.metadata_manager.read_metadata()
         LOGGER.write('Loaded metadata')
         LOGGER.write(self.loaded_metadata)
+        self.metadata_manager.apply_metadata(self.loaded_metadata)
+        LOGGER.write('Applied metadata')
 
+        # Stores currently entered credentials
         self.credentials = credentials
+
+        # Temp variable fired on callback after inout
         self.post_input_callback = None
 
         # Add a run on exit callback to save metadata and close log file
@@ -287,17 +303,17 @@ class PyAutogitManager:
         self.repos = find_repos_in_path(self.workspace_path)
 
         # Initialize CUI elements for each sub-screen
-        self.repo_select_widget_set = self.repo_select_manager.initialize_screen_elements()
-        self.repo_control_widget_set = self.repo_control_manager.initialize_screen_elements()
-        self.settings_widget_set = self.settings_manager.initialize_screen_elements()
-        self.editor_widget_set = self.editor_manager.initialize_screen_elements()
+        self.repo_select_widget_set     = self.repo_select_manager.initialize_screen_elements()
+        self.repo_control_widget_set    = self.repo_control_manager.initialize_screen_elements()
+        self.settings_widget_set        = self.settings_manager.initialize_screen_elements()
+        self.editor_widget_set          = self.editor_manager.initialize_screen_elements()
         LOGGER.write('Initialized CUI elements')
 
         # Open repo select screen in workspace view
         if self.current_state == 'workspace':
             self.open_repo_select_window()
 
-        # Open repo control screen in repo viewref
+        # Open repo control screen in repo view
         elif self.current_state == 'repo':
             self.open_autogit_window()
 
@@ -507,6 +523,7 @@ class PyAutogitManager:
 
         LOGGER.write('Updating the default editor to {}'.format(self.user_message))
         self.default_editor = self.user_message
+        self.editor_type = 'External'
         self.root.show_message_popup('Default Editor Changed', '{} editor will be used to open directories'.format(self.user_message))
         self.repo_select_manager.refresh_status()
 

@@ -3,7 +3,7 @@
 This file is meant to handle the intermediate considerations between the 
 CUI and the underlying git commands found in pyautogit.commands
 
-Author: Jakub Wlodek
+Author: Jakub Wlodek  
 Created: 01-Oct-2019
 """
 
@@ -134,7 +134,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
             self.info_panel.set_text(self.manager.get_about_info())
         elif selection == 'Open Repository in Editor':
             self.open_editor()
-        elif selection == 'Re-Enter Credentials':
+        elif selection == '(Re)Enter Credentials':
             self.manager.ask_credentials()
         elif selection == 'Enter Custom Command':
             self.ask_custom_command()

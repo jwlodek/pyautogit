@@ -89,7 +89,8 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
         self.settings_info_panel.is_selectable = False
         self.info_panel = self.settings_info_panel
 
-        self.update_log_file_path('.pyautogit/{}.log'.format(str(datetime.datetime.today()).split(' ')[0]), default_path=True)
+        if LOGGER._LOG_FILE_PATH is None:
+            self.update_log_file_path('.pyautogit/{}.log'.format(str(datetime.datetime.today()).split(' ')[0]), default_path=True)
         return settings_widget_set
 
 

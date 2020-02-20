@@ -1,4 +1,9 @@
 """Pyautogit internal editor, based on snano example from py_cui
+
+Classes
+-------
+EditorScreenManager
+    Extension of screenManager, manages editor subscreen
 """
 
 import os
@@ -32,7 +37,7 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
         Function that opens a file/directory from menu
     save_opened_file()
         Function that saves the opened file
-    delete_selected_file()
+    delete_selected_file_dir()
         Function that deletes the selected file
     """
 

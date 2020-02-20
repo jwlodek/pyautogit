@@ -1,4 +1,9 @@
 """Manager implementation for CUI screen for selecting different repositories.
+
+Classes
+-------
+RepoSelectManager
+    Extension of ScreenManager, supports repository selection
 """
 
 import py_cui

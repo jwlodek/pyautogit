@@ -5,6 +5,13 @@ Pyautogit internal editor, based on snano example from py_cui
 
 
 
+#### Classes
+
+ Class  | Doc
+-----|-----
+ EditorScreenManager | Extension of screenManager, manages editor subscreen
+
+
 
 
 ## EditorScreenManager(pyautogit.screen_manager.ScreenManager)
@@ -36,7 +43,7 @@ Class representing internal editor screen for pyautogit
  add_new_file | Function for creating a new file
  open_file_dir | Function that opens a file/directory from menu
  save_opened_file | Function that saves the opened file
- delete_selected_file | Function that deletes the selected file
+ delete_selected_file_dir | Function that deletes the selected file
 
 
 
@@ -71,6 +78,20 @@ Override of base class. Initializes editor widgets and widget set
  Return Variable  | Type  | Doc
 -----|----------|-----
  pyautogit_editor_widget_set  |  py_cui.widget_set.WidgetSet | Widget set for internal editor screen
+
+
+
+
+
+### refresh_status
+
+```python
+def refresh_status(self)
+```
+
+Function that refreshes the view of the file menu on new dir or file creation
+
+
 
 
 
@@ -153,6 +174,20 @@ Function for creating a new file
 
 
 
+### add_new_directory
+
+```python
+def add_new_directory(self)
+```
+
+Function for creating a new directory
+
+
+
+
+
+
+
 ### open_file_dir
 
 ```python
@@ -181,10 +216,10 @@ Function that saves the opened file
 
 
 
-### delete_selected_file
+### delete_selected_file_dir
 
 ```python
-def delete_selected_file(self)
+def delete_selected_file_dir(self)
 ```
 
 Function that deletes the selected file

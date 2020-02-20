@@ -5,6 +5,13 @@ Metadata Management Classes and Functions
 
 
 
+#### Classes
+
+ Class  | Doc
+-----|-----
+ PyAutogitMetadataManager | Class responsible for reading, writing, and applying metadata
+
+
 
 
 ## PyAutogitMetadataManager

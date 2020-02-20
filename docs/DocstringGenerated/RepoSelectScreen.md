@@ -5,6 +5,13 @@ Manager implementation for CUI screen for selecting different repositories.
 
 
 
+#### Classes
+
+ Class  | Doc
+-----|-----
+ RepoSelectManager | Extension of ScreenManager, supports repository selection
+
+
 
 
 ## RepoSelectManager(pyautogit.screen_manager.ScreenManager)

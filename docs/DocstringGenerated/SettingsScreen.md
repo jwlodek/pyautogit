@@ -5,6 +5,13 @@ A subscreen that allows for setting a variety of pyautogit settings.
 
 
 
+#### Classes
+
+ Class  | Doc
+-----|-----
+ SettingsScreen | extends ScreenManager base, adds widgets for controlling pyautogit settings.
+
+
 
 
 ## SettingsScreen(pyautogit.screen_manager.ScreenManager)
@@ -17,6 +24,13 @@ Class representing settings subscreen for pyautogit
 
 
 
+
+#### Attributes
+
+ Attribute  | Type  | Doc
+-----|----------|-----
+ current_info_log  |  str | The current settings log text
+ show_settings_log  |  bool | Toggle for showing settings log
 
 #### Methods
 
@@ -108,7 +122,7 @@ Function that updates the settings info log panel
 def fetch_about_file(self, file)
 ```
 
-Function that grabs readme file and displays it
+Function that grabs file from github and displays it in info panel
 
 
 

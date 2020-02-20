@@ -7,8 +7,15 @@ File containing functions used by the repository specific CUI screen.
 This file is meant to handle the intermediate considerations between the 
 CUI and the underlying git commands found in pyautogit.commands
 
-Author: Jakub Wlodek
+Author: Jakub Wlodek  
 Created: 01-Oct-2019
+
+
+#### Classes
+
+ Class  | Doc
+-----|-----
+ RepoControlManager | Extension of ScreenManager, manages repository control actions
 
 
 

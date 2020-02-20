@@ -1,4 +1,13 @@
 """File containing class that acts as a parent class to all sub-screen managers
+
+The base screen manager is responsible for defining how CUI elements are assigned to screens,
+as well as what the screen must do to refresh its status. Also supports performing long (async)
+operations, and running custom commands
+
+Classes
+-------
+ScreenManager
+    Main parent screen manager class for all subscreens
 """
 
 from sys import platform

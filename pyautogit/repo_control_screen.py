@@ -5,6 +5,11 @@ CUI and the underlying git commands found in pyautogit.commands
 
 Author: Jakub Wlodek  
 Created: 01-Oct-2019
+
+Classes
+-------
+RepoControlManager
+    Extension of ScreenManager, manages repository control actions
 """
 
 import os

@@ -1,4 +1,9 @@
 """Metadata Management Classes and Functions
+
+Classes
+-------
+PyAutogitMetadataManager
+    Class responsible for reading, writing, and applying metadata
 """
 
 import os

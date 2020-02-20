@@ -4,8 +4,27 @@ Main pyautogit manager class and entry point
 
 
 
+The main driver class contains code for common actions performed by all subscreens such as
+credential management, as well as functions for switching between subscreens.
+
 Author: Jakub Wlodek  
 Created: 01-Oct-2019
+
+
+#### Classes
+
+ Class  | Doc
+-----|-----
+ PyAutogitManager | Main py_cui wrapper class that drives pyautogit. Uses ScreenManager subclass instances for subscreens
+
+#### Functions
+
+ Function  | Doc
+-----|-----
+ find_repos_in_path | Searches for .git directories in specified path
+ is_git_repo | Checks if given path is a git repository
+ parse_args | Parses user arguments
+ main | Program entrypoint
 
 
 

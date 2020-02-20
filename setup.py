@@ -21,7 +21,7 @@ class InstallLibrary(install):
 
 setup(
     name="pyautogit",
-    version="0.0.2",
+    version="0.0.1",
     author="Jakub Wlodek",
     author_email="jwlodek.dev@gmail.com",
     description="A command line interface for working with git written in python with the help of py_cui.",

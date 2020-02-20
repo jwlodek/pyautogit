@@ -1,19 +1,7 @@
 @echo OFF
-if exist markdoc goto MARKDOCEXIST
-git clone https://github.com/jwlodek/markdoc
-:MARKDOCEXIST
-cd markdoc
-echo Creating docs for PyAutogitManager.md...
-py markdoc.py ../../../pyautogit/__init__.py ../../DocstringGenerated/PyAutogitManager.md
-echo Creating docs for ScreenManager.md...
-py markdoc.py ../../../pyautogit/screen_manager.py ../../DocstringGenerated/ScreenManager.md
-echo Creating docs for SettingScreen.md...
-py markdoc.py ../../../pyautogit/settings_screen.py ../../DocstringGenerated/SettingScreen.md
-echo Creating docs for EditorScreen.md...
-py markdoc.py ../../../pyautogit/internal_editor_screen.py ../../DocstringGenerated/EditorScreen.md
-echo Creating docs for Commands.md...
-py markdoc.py ../../../pyautogit/commands.py ../../DocstringGenerated/Commands.md
-echo Creating docs for RepoSelect.md...
-py markdoc.py ../../../pyautogit/repo_select_screen.py ../../DocstringGenerated/RepoSelect.md
-echo Creating docs for RepoControl.md...
-py markdoc.py ../../../pyautogit/repo_control_screen.py ../../DocstringGenerated/RepoControl.md
+if exist npdoc2md goto SCRIPTEXIST
+git clone https://github.com/jwlodek/npdoc2md
+:SCRIPTEXIST
+cd npdoc2md
+git pull
+py npdoc2md.py ..\..\..\pyautogit ..\..\DocstringGenerated -i __main__.py askpass.py askpass_win.py errors.py

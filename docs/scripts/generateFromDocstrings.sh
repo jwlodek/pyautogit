@@ -2,15 +2,11 @@
 
 #Simple bash script for generating markdown documentation from docstrings
 
-if [ ! -d "markdoc" ]
+if [ ! -d "npdoc2md" ]
 then
-git clone https://github.com/jwlodek/markdoc
+git clone https://github.com/jwlodek/npdoc2md
 fi
-cd markdoc
-python3 markdoc.py ../../../pyautogit/__init__.py ../../DocstringGenerated/PyAutogitManager.md
-python3 markdoc.py ../../../pyautogit/screen_manager.py ../../DocstringGenerated/ScreenManager.md
-python3 markdoc.py ../../../pyautogit/commands.py ../../DocstringGenerated/Commands.md
-python3 markdoc.py ../../../pyautogit/repo_select_screen.py ../../DocstringGenerated/RepoSelect.md
-python3 markdoc.py ../../../pyautogit/repo_control_screen.py ../../DocstringGenerated/RepoControl.md
-python3 markdoc.py ../../../pyautogit/settings_screen.py ../../DocstringGenerated/SettingsScreen.md
-python3 markdoc.py ../../../pyautogit/internal_editor_screen.py ../../DocstringGenerated/EditorScreen.md
+git pull
+cd npdoc2md
+python3 npdoc2md.py ../../../pyautogit ../../DocstringGenerated -i __main__.py
+

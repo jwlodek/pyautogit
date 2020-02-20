@@ -6,6 +6,7 @@ git clone https://github.com/jwlodek/pyautogit-docs
 :DOCSEXIST
 cd pyautogit
 git pull
+pip install mkdocs
 py -m mkdocs build -d ..\pyautogit-docs
 cd ..\pyautogit-docs
 git add -A

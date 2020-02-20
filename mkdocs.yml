@@ -9,12 +9,14 @@ nav:
   - Repo Control Screen: repo_control.md
   - For Developers:
     - Introduction: developers.md
-    - PyAutogitManager: DocstringGenerated/PyAutogit.md
+    - PyAutogitManager: DocstringGenerated/Pyautogit.md
     - Screen Manager: DocstringGenerated/ScreenManager.md
-    - Repo Select: DocstringGenerated/RepoSelect.md
-    - Repo Control: DocstringGenerated/RepoControl.md
+    - Repo Select: DocstringGenerated/RepoSelectScreen.md
+    - Repo Control: DocstringGenerated/RepoControlScreen.md
     - Commands: DocstringGenerated/Commands.md
     - Settings Screen: DocstringGenerated/SettingsScreen.md
-    - Editor Screen: DocstringGenerated/EditorScreen.md
+    - Editor Screen: DocstringGenerated/InternalEditorScreen.md
+    - Logger: DocstringGenerated/Logger.md
+    - Metadata Manager: DocstringGenerated/MetadataManager.md
   - About: about.md
 theme: readthedocs

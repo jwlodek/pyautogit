@@ -10,3 +10,4 @@ files.txt
 dist/
 *.log
 markdoc/
+npdoc2md/

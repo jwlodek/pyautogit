@@ -2,6 +2,7 @@
 """
 
 import os
+import shutil
 import py_cui.widget_set
 import pyautogit.screen_manager
 
@@ -45,6 +46,8 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
         else:
             self.opened_path = os.dirname(opened_path)
 
+        self.new_file_open = False
+
 
     def initialize_screen_elements(self):
         """Override of base class. Initializes editor widgets and widget set
@@ -57,40 +60,55 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
 
         pyautogit_editor_widget_set = py_cui.widget_set.WidgetSet(7, 8)
 
-        pyautogit_editor_widget_set.add_key_command(py_cui.keys.KEY_S_LOWER, self.save_opened_file)
-        pyautogit_editor_widget_set.add_key_command(py_cui.keys.KEY_BACKSPACE, self.manager.open_autogit_window_target)
-
-        self.file_menu = pyautogit_editor_widget_set.add_scroll_menu('Directory Files', 0, 0, row_span=5, column_span=2)
-
-        self.file_menu.add_key_command(py_cui.keys.KEY_ENTER, self.open_file_dir)
-        self.file_menu.add_key_command(py_cui.keys.KEY_DELETE, self.delete_selected_file)
-        self.file_menu.add_text_color_rule('<DIR>', py_cui.GREEN_ON_BLACK, 'startswith', match_type='region', region=[5,1000])
-        self.file_menu.set_focus_text('Open File/Dir - Enter | Edit File - Space | Delete File - Delete | Return - Esc')
-
-        self.current_dir_textbox = pyautogit_editor_widget_set.add_text_box('Current Directory', 6, 0, column_span=2)
+        self.current_dir_textbox = pyautogit_editor_widget_set.add_text_box('Current Directory', 6, 0, column_span=8)
+        self.current_dir_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.open_new_directory)
         self.current_dir_textbox.set_text(self.opened_path)
         self.current_dir_textbox.set_focus_text('Open Directory - Enter | Cancel - Esc')
 
-        self.open_new_directory()
+        self.edit_text_block = pyautogit_editor_widget_set.add_text_block('Open file', 0, 2, row_span=6, column_span=6)
+        self.edit_text_block.set_focus_text('Save - Esc + S | Return - Esc')
 
-        self.edit_text_block = pyautogit_editor_widget_set.add_text_block('Open file', 0, 2, row_span=7, column_span=6)
-        self.edit_text_block.set_focus_text('Return - Esc')
-
-        self.current_dir_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.open_new_directory)
+        self.new_dir_textbox = pyautogit_editor_widget_set.add_text_box('Add New Directory', 4, 0, column_span=2)
+        self.new_dir_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.add_new_directory)
+        self.new_dir_textbox.set_focus_text('Create Directory - Enter | Cancel - Esc')
 
         self.new_file_textbox = pyautogit_editor_widget_set.add_text_box('Add New File', 5, 0, column_span=2)
         self.new_file_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.add_new_file)
         self.new_file_textbox.set_focus_text('Create File - Enter | Cancel - Esc')
 
+        self.file_menu = pyautogit_editor_widget_set.add_scroll_menu('Directory Files', 0, 0, row_span=4, column_span=2)
+        self.file_menu.add_key_command(py_cui.keys.KEY_ENTER,   self.open_file_dir)
+        self.file_menu.add_key_command(py_cui.keys.KEY_DELETE,  self.delete_selected_file_dir)
+        self.file_menu.add_key_command(py_cui.keys.KEY_F_LOWER, lambda : self.manager.root.move_focus(self.new_file_textbox))
+        self.file_menu.add_key_command(py_cui.keys.KEY_D_LOWER, lambda : self.manager.root.move_focus(self.new_dir_textbox))
+        self.file_menu.add_key_command(py_cui.keys.KEY_R_LOWER, self.refresh_status)
+        self.file_menu.add_key_command(py_cui.keys.KEY_BACKSPACE, self.manager.open_autogit_window_target)
+        self.file_menu.add_text_color_rule('<DIR>', py_cui.GREEN_ON_BLACK, 'startswith', match_type='region', region=[5,1000])
+        self.file_menu.set_focus_text('Return -Bcksp | Open - Enter | New File - f | New Dir - d | Refresh - r | Delete - Del | Return - Esc')
+
         self.info_panel = self.edit_text_block
+
+        pyautogit_editor_widget_set.add_key_command(py_cui.keys.KEY_S_LOWER, self.save_opened_file)
+        pyautogit_editor_widget_set.add_key_command(py_cui.keys.KEY_M_LOWER, lambda : self.manager.root.move_focus(self.file_menu))
+        pyautogit_editor_widget_set.add_key_command(py_cui.keys.KEY_BACKSPACE, self.manager.open_autogit_window_target)
+
+        self.open_new_directory()
+
         return pyautogit_editor_widget_set
+
+
+    def refresh_status(self):
+        """Function that refreshes the view of the file menu on new dir or file creation
+        """
+
+        self.open_new_directory_external(self.current_dir_textbox.get())
 
 
     def set_initial_values(self):
         """Function that sets status bar text
         """
 
-        self.manager.root.set_status_bar_text('Return - Bcksp | Use Widget - Enter | Navigate - Arrows')
+        self.manager.root.set_status_bar_text('Return - Bcksp | Save Open File - s | Open File Menu - m | Navigate - Arrows')
 
 
     def clear_elements(self):
@@ -151,13 +169,26 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
         """Function for creating a new file
         """
 
-        self.file_menu.add_item(self.new_file_textbox.get())
-        self.file_menu.selected_item = len(self.file_menu.get_item_list()) - 1
-        self.new_file_textbox.selected = False
-        self.manager.root.set_selected_widget(self.edit_text_block.id)
-        self.edit_text_block.title = self.new_file_textbox.get()
-        self.edit_text_block.clear()
-        self.new_file_textbox.clear()
+        if os.path.exists(os.path.join(self.current_dir_textbox.get(), self.new_file_textbox.get())):
+            self.manager.root.show_error_popup('File Exists', 'File exists with name {}!'.format(self.new_file_textbox.get()))
+        else:
+            self.edit_text_block.title = 'Open file - ' + self.new_file_textbox.get() + ' - (Unsaved)'
+            self.edit_text_block.clear()
+            self.new_file_textbox.clear()
+            self.manager.root.move_focus(self.edit_text_block)
+
+
+    def add_new_directory(self):
+        """Function for creating a new directory
+        """
+
+        try:
+            os.mkdir(self.new_dir_textbox.get())
+            self.new_dir_textbox.clear()
+            self.refresh_status()
+            self.manager.root.move_focus(self.file_menu)
+        except OSError:
+            self.manager.root.show_error_popup('OS ERROR', 'Failed to create new directory!')
 
 
     def open_file_dir(self):
@@ -175,7 +206,7 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
                 text = fp.read()
                 fp.close()
                 self.edit_text_block.set_text(text)
-                self.edit_text_block.title = filename
+                self.edit_text_block.title = 'Open file - {}'.format(filename)
             except:
                 self.manager.root.show_warning_popup('Not a text file', 'The selected file could not be opened - not a text file')
 
@@ -184,27 +215,34 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
         """Function that saves the opened file
         """
 
-        if self.edit_text_block.title != 'Open file':
-            fp = open(os.path.join(self.opened_path, self.edit_text_block.title), 'w')
+        if self.edit_text_block.title.startswith('Open file - '):
+            filename = self.edit_text_block.title.split('-', 1)[1].strip()
+            fp = open(os.path.join(self.opened_path, filename), 'w')
             fp.write(self.edit_text_block.get())
             fp.close()
-            self.manager.root.show_message_popup('Saved', 'Your file has been saved as {}'.format(self.edit_text_block.title))
+            self.refresh_status()
+            self.manager.root.move_focus(self.edit_text_block)
+            self.edit_text_block.title = 'Open file - {}'.format(filename)
         else:
             self.manager.root.show_error_popup('No File Opened', 'Please open a file before saving it.')
 
 
-    def delete_selected_file(self):
+    def delete_selected_file_dir(self):
         """Function that deletes the selected file
         """
 
-        if self.edit_text_block.title != 'Open file':
+        if not self.file_menu.get().startswith('<DIR>'):
+            target = os.path.join(self.current_dir_textbox.get(), self.file_menu.get())
             try:
-                os.remove(os.path.join(self.opened_path, self.edit_text_block.title))
-                self.edit_text_block.clear()
-                self.edit_text_block.title = 'Open file'
-                self.file_menu.remove_selected_item()
-            except OSError:
-                self.manager.root.show_error_popup('OS Error', 'Operation could not be completed due to an OS error.')
+                os.remove(target)
+            except:
+                self.manager.root.show_error_popup('Delete Error', 'Failed to delete the target file!')
         else:
-            self.manager.root.show_error_popup('No File Opened', 'Please open a file before deleting it.')
+            target = os.path.join(self.current_dir_textbox.get(), self.file_menu.get()[6:])
+            try:
+                shutil.rmtree(target)
+            except:
+                self.manager.root.show_error_popup('Delete Error', 'Could not remove target directory!')
+
+        self.refresh_status()
 

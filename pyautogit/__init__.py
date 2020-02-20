@@ -426,6 +426,7 @@ class PyAutogitManager:
         self.root.apply_widget_set(self.editor_widget_set)
         self.current_state == 'editor'
         self.editor_manager.refresh_status()
+        self.root.move_focus(self.editor_manager.file_menu)
     
 
     #-------------------------------------------

@@ -260,7 +260,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
 
         self.info_text_block.set_text(self.manager.get_about_info())
         self.branch_menu_state = 'branches'
-        self.manager.root.set_status_bar_text('Return - Bcksp | Menu - m | Refresh - r | Add All - a | Commit - c | Log - l | Editor - e | Pull - f | Push - p')
+        self.manager.root.set_status_bar_text('Return - Bcksp | Menu - m | Refresh - r | Add All - a | Commit - c | Log - l | Editor - e | Pull - f | Push - p | Help -h')
 
 
     def refresh_status(self):

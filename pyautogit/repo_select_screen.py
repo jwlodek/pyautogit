@@ -70,9 +70,9 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
             self.manager.open_not_supported_popup(selection)
             pass
         elif selection == 'Clone New Repository':
-            self.manager.root.move_focus(self.manager.clone_new_box)
+            self.manager.root.move_focus(self.clone_new_box)
         elif selection == 'Create New Repository':
-            self.manager.root.move_focus(self.manager.create_new_box)
+            self.manager.root.move_focus(self.create_new_box)
         elif selection == 'Settings':
             self.manager.open_settings_window()
         elif selection == 'Enter Custom Command':

@@ -47,7 +47,7 @@ import pyautogit.metadata_manager as METADATA
 
 
 # Module version + copyright
-__version__     = '0.0.1'
+__version__     = '0.0.3'
 __copyright__   = '2019-2020'
 
 
@@ -119,7 +119,16 @@ def parse_args():
     parser.add_argument('-w', '--workspace',        help='Pass a path to this argument to start pyautogit in a workspace not the current directory.')
     parser.add_argument('-n', '--nosavemetadata',   action='store_true', help='Add this flag if you would like pyautogit to not save metadata between sessions.')
     parser.add_argument('-d', '--debug',            action='store_true', help='Flag that enables debug logging by default.')
+    parser.add_argument('-v', '--version',          action='store_true', help='Run pyautogit with this flag to print version information.')
     args = vars(parser.parse_args())
+
+    if args['version']:
+        print('pyautogit v{}\n'.format(__version__))
+        print('BSD-3-Clause License')
+        print('Copyright (c) {} Jakub Wlodek'.format(__copyright__))
+        print('https://github.com/jwlodek/pyautogit\n')
+        exit()
+
     if args['credentials']:
         user = input('Please enter your github/gitlab username > ')
         credentials.append(user)

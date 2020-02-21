@@ -38,6 +38,10 @@ Note that you may require root access for installing with `pip` depending on you
 
 Below is a quick demo of using `pyautogit to do some common git actions.
 
+<p align="center">
+    <img src="docs/assets/pyautogit-demo.gif">
+</p>
+
 ### Usage
 
 Once `pyautogit` is installed, open a command line client (note that Windows Terminal is not yet supported), then navigate to a directory and type:

@@ -58,13 +58,13 @@ def handle_credential_command(command, credentials, target_location='.'):
     out = ''
     err = 0
     # This is a bit janky, but I'm not sure what I could do to make it better
-    askpass_dir = os.path.dirname(ASKPASS.__file__)
+    #askpass_dir = os.path.dirname(ASKPASS.__file__)
     if platform == "win32":
-        askpass_script = "askpass_win.py"
+        askpass_script = "askpass_pyautogit_win"
     else:
-        askpass_script = "askpass.py"
-    askpass_script_path = os.path.join(askpass_dir, askpass_script)
-    environ['GIT_ASKPASS'] = askpass_script_path
+        askpass_script = "askpass_pyautogit"
+    #askpass_script_path = os.path.join(askpass_dir, askpass_script)
+    environ['GIT_ASKPASS'] = askpass_script
     environ['GIT_USERNAME'] = credentials[0]
     environ['GIT_PASSWORD'] = credentials[1]
     out, err = handle_basic_command(command, command)

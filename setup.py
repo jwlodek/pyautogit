@@ -38,6 +38,8 @@ setup(
     entry_points={
         'console_scripts': [
             'pyautogit = pyautogit:main',
+            'askpass_pyautogit = pyautogit.askpass.askpass:main',
+            'askpass_pyautogit_win = pyautogit.askpass.askpass_win:main'
         ],
     },
     install_requires=required_packages,
@@ -45,7 +47,6 @@ setup(
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',

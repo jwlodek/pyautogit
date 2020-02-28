@@ -3,11 +3,6 @@
 The base screen manager is responsible for defining how CUI elements are assigned to screens,
 as well as what the screen must do to refresh its status. Also supports performing long (async)
 operations, and running custom commands
-
-Classes
--------
-ScreenManager
-    Main parent screen manager class for all subscreens
 """
 
 from sys import platform
@@ -34,25 +29,6 @@ class ScreenManager:
         Overriden by children, list of options that pop up in menu
     info_panel : py_cui.widgets.TextBlock
         The main textblock on the screen, used to display status information.
-
-    Methods
-    -------
-    process_menu_selection()
-        Overriden by child, processes based on menu item selection.
-    show_command_result()
-        Displays the result of running a particular command. If more than one line of output, prints to info panel, otherwise, shows popup.
-    show_status_long_op()
-        Used instead of show_command_result for long (async) operations
-    show_menu()
-        Opens the menu for the screen manager object
-    refresh_git_status()
-        Function called after each git operation by children. Must be overriden
-    handle_user_command()
-        Processes a custom command from the user
-    ask_custom_command()
-        Prompts user to enter a custom command
-    execute_long_operation()
-        Wrapper function that should be used as lambda operation. Allows for performing long async operation while loading icon runs
     """
 
     def __init__(self, top_manager, screen_type):

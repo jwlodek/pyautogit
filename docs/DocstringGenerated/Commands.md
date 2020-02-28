@@ -9,6 +9,54 @@ This file should remain separate from the CUI interface.
 Author: Jakub Wlodek  
 Created: 01-Oct-2019
 
+#### Functions
+
+ Function  | Doc
+-----|-----
+ remove_repo_tree | Function that removes repository.
+ del_rw |
+ handle_credential_command | Function that executes a git command that requires credentials.
+ parse_string_into_executable_command | Function that takes in a string command, and parses it into a subprocess arg list
+ handle_basic_command | Function that executes any git command given, and returns program output.
+ handle_open_external_program_command | Function used to run commands that open an external program and detatch from pyautogit.
+ handle_custom_command | Function that executes a custom, non-git command
+ open_default_editor | Function used to open the selected default editor in external window.
+ git_status_short | Function for getting shorthand git status
+ git_status | Function for getting git status
+ git_tree | Function that gets git log as a tree
+ git_log | Function that gets git log information
+ git_diff | Function that gets git diff
+ git_diff_file | Function that gets git diff for specific file
+ git_get_remotes | Function for returning git remotes list
+ git_get_remote_info | Function that gets information about a remote
+ git_add_remote | Function that adds a new remote to the repository
+ git_remove_remote | Function that removes a remote from the repository
+ git_rename_remote | Function that renames a remote in the repository
+ git_get_commit_info | Function that gets info about a particular commit.
+ git_checkout_commit | Function that checks out a particular commit.
+ git_commit_changes | Function that commits added changes
+ git_create_tag | Function that creates a new tag
+ git_get_tags | Function that gets list of git tags in repo
+ git_get_branches | Function that gets a list of the repo branches.
+ git_get_recent_commits | Gets recent commits made to the branch
+ git_create_new_branch | Creates anew branch for the repo
+ git_delete_branch | Deletes existing git branch
+ git_checkout_branch | Checks out given branch
+ git_checkout_tag | Checks out given tag
+ git_merge_branches | Merges checked out branch with given branch
+ git_revert_branch_merge | Undos merge between two branches
+ git_init_new_repo | Function that creates a new git repository
+ git_clone_new_repo | Function that clones a new git repository
+ git_add_all | Function that stages all files in repo for commit.
+ git_reset_all | Function that unstages all files in repo for commit.
+ git_add_file | Function that stages single file in repo for commit.
+ git_reset_file | Function that unstages single file in repo for commit.
+ git_stash_all | Function that stashes all changes in repo.
+ git_unstash_all | Function that unstashes all changes in repo.
+ git_stash_file | Function that stashes single file in repo.
+ git_pull_branch | Function that pulls a branch from the remote repo
+ git_push_to_branch | Function that pushes a branch to the remote repo
+
 
 
 

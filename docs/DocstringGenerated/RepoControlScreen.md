@@ -10,12 +10,11 @@ CUI and the underlying git commands found in pyautogit.commands
 Author: Jakub Wlodek  
 Created: 01-Oct-2019
 
-
 #### Classes
 
  Class  | Doc
 -----|-----
- RepoControlManager | Extension of ScreenManager, manages repository control actions
+ RepoControlManager(pyautogit.screen_manager.ScreenManager) | Class responsible for managing functions for the repository control screen.
 
 
 
@@ -46,15 +45,22 @@ the pyautogit.commands module.
  Method  | Doc
 -----|-----
  process_menu_selection | Override of base class, executes based on user menu selection
+ initialize_screen_elements | Function that initializes the widgets for the repo control screen. Override of base class function
+ clear_elements | Function that clears elements of repo control window
+ set_initial_values | Function that initializes status bar and info text for repo control window
  refresh_status | Function that refreshes a git repository status
  get_repo_status_short | Gets shorthand repository status
- get_repo_remotes | gets list of repository remotes
- get_repo_branches | gets list of repository branches
- show_remote_info | gets info about remote
- show_commit_info | gets info about a particular commit
- get_recent_commits | gets list of recent commits to branch
+ get_repo_remotes | Gets list of repository remotes
+ show_branches | Function that swaps to showing branches
+ get_repo_branches | Gets list of repository branches
+ show_tags | Function that swaps to showing tags
+ get_repo_tags | Gets list of repository tags
+ show_remote_info | Gets info about remote
+ show_commit_info | Gets info about a particular commit
+ get_recent_commits | Gets list of recent commits to branch
  create_new_tag | Creates a new tag
  show_log | Displays the git log
+ show_tree | Displays git log as a tree
  stash_all_changes | Stashes all repo changes
  unstash_all_changes | Pops the stash
  open_git_diff | Opens current git diff state
@@ -63,17 +69,25 @@ the pyautogit.commands module.
  open_editor_file | Opens an external editor for a selected file
  add_all_changes | Adds all changes to staging
  add_revert_file | Adds/Reverts single file from staging
- ask_new_remote_name | Asks user for new remote name
- ask_new_remote_url | Asks user for new remote url
- add_remote | Adds a new remote to repo
+ ask_new_remote_name | Opens text box to enter new remote name
+ ask_new_remote_url | Opens text box to ask new remote url
+ add_remote | Adds remote to git repo
  delete_remote | Deletes selected remote from local repo
  rename_remote | Renames selected remote from local repo
  commit | Commits currently staged items
- pull_repo_branch | pulls from remote
- push_repo_branch | pushes to remote
+ pull_repo_branch | Pulls from remote
+ push_repo_branch | Pushes to remote
  create_new_branch | Creates new branch for repository
+ delete_branch | Deletes selected branch
  checkout_branch | Checks out specified branch
+ merge_branches | Merges selected branch into the currently checked out branch
+ revert_merge | Undos the merge that was just performed
  checkout_commit | Checks out specified commit
+ show_help_overview | Function that displays help message for overview mode.
+ show_help_add_files_menu | Function that displays help message for the add files menu.
+ show_help_remotes_menu | Function that displays help message for the add files menu.
+ show_help_branch_menu | Function that displays help message for the add files menu.
+ show_help_commits_menu | Function that displays help message for the add files menu.
 
 
 

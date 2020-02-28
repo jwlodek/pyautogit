@@ -10,21 +10,20 @@ credential management, as well as functions for switching between subscreens.
 Author: Jakub Wlodek  
 Created: 01-Oct-2019
 
-
 #### Classes
 
  Class  | Doc
 -----|-----
- PyAutogitManager | Main py_cui wrapper class that drives pyautogit. Uses ScreenManager subclass instances for subscreens
+ PyAutogitManager | Main pyautogit manager class. Controls all operations of CUI
 
 #### Functions
 
  Function  | Doc
 -----|-----
- find_repos_in_path | Searches for .git directories in specified path
- is_git_repo | Checks if given path is a git repository
- parse_args | Parses user arguments
- main | Program entrypoint
+ find_repos_in_path | Helper function that finds repositories in the path
+ is_git_repo | Simple function that checks if a given path is a git repository
+ parse_args | Function that parses user arguments for pyautogit
+ main | Entry point for pyautogit. Parses arguments, and initializes the CUI
 
 
 
@@ -165,11 +164,17 @@ Main pyautogit manager class. Controls all operations of CUI
 
  Method  | Doc
 -----|-----
+ close_cleanup | Function fired upon closing pyautogit
+ clean_exit | Function that exits the CUI cleanly
+ error_exit | Function that exits the CUI with an error code
  open_not_supported_popup | Function that displays warning for a non-supported operation
  open_autogit_window | Function that opens the repository control window.
- open_repo_select_window | Function that opens the repository select window.
+ open_autogit_window_target | Function that opens a repo control window given a target location
+ open_repo_select_window | Opens the repo select window. Fired when the backspace key is pressed in the repo control window
+ open_settings_window | Function for opening the settings window
+ open_editor_window | Function that opens an editor window
  update_password | Function called once password is entered.
- ask_password | Function that opens popup and asks for password. Also writes username to credentials
+ ask_password | Function that opens popup and asks for password. Also writes username to credentials.
  ask_credentials | Function that asks for user credentials and places them in the appropriate variables.
  were_credentials_entered | Simple function for checking if credentials were entered
  perform_long_operation | Function that wraps an operation around a loading icon popup.

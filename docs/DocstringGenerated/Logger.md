@@ -6,6 +6,16 @@ Module containing logging classes and functions.
 
 The logger is controlled via a set of global variables set by the pyautogit client.
 
+#### Functions
+
+ Function  | Doc
+-----|-----
+ toggle_logging | Function for opening/closing log file as required.
+ set_log_file_path | Sets the path to the log file
+ initialize_logger | Function for initializing log-file writing in addition to stdout output
+ close_logger | Function that closes the opened logfile
+ write | Main logging funcion. Called if write function was set
+
 
 
 

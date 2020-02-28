@@ -8,12 +8,11 @@ The base screen manager is responsible for defining how CUI elements are assigne
 as well as what the screen must do to refresh its status. Also supports performing long (async)
 operations, and running custom commands
 
-
 #### Classes
 
  Class  | Doc
 -----|-----
- ScreenManager | Main parent screen manager class for all subscreens
+ ScreenManager | Main parent screen manager class.
 
 
 
@@ -46,14 +45,17 @@ Contains common functionality for showing command results, handling credentials,
 
  Method  | Doc
 -----|-----
- process_menu_selection | Overriden by child, processes based on menu item selection.
- show_command_result | Displays the result of running a particular command. If more than one line of output, prints to info panel, otherwise, shows popup.
- show_status_long_op | Used instead of show_command_result for long (async) operations
- show_menu | Opens the menu for the screen manager object
- refresh_git_status | Function called after each git operation by children. Must be overriden
- handle_user_command | Processes a custom command from the user
- ask_custom_command | Prompts user to enter a custom command
- execute_long_operation | Wrapper function that should be used as lambda operation. Allows for performing long async operation while loading icon runs
+ initialize_screen_elements | Function that must be overridden by subscreen. Creates py_cui_widgets, returns widget set object.
+ process_menu_selection | Processes based on selection returned from the menu
+ show_menu | Opens the menu using the menu item list for screen manager instance
+ show_command_result | Function that displays the result of stdout/err for an external command.
+ show_status_long_op | Shows the status of a long(async) operation on success completion
+ refresh_status | Function that is fired after each git operation. Implement in subclasses.
+ clear_elements | Function that clears entries from widgets for reuse
+ set_initial_values | Function that sets initial values for widgets in screen
+ handle_user_command | Handles custom user command.
+ ask_custom_command | Function that prompts user to enter custom command
+ execute_long_operation | Wrapper function that allows for executing long operations w/ credential requirements.
 
 
 

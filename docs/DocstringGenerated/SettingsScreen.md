@@ -4,12 +4,11 @@ A subscreen that allows for setting a variety of pyautogit settings.
 
 
 
-
 #### Classes
 
  Class  | Doc
 -----|-----
- SettingsScreen | extends ScreenManager base, adds widgets for controlling pyautogit settings.
+ SettingsScreen(pyautogit.screen_manager.ScreenManager) | Class representing settings subscreen for pyautogit
 
 
 
@@ -36,12 +35,21 @@ Class representing settings subscreen for pyautogit
 
  Method  | Doc
 -----|-----
- initialize_screen_elements | Override of base class, initializes elements, returns widget set
+ initialize_screen_elements | Override of base class function. Initializes widgets, and returns widget set
+ set_initial_values | Function that sets initial status bar text for settings window
+ add_to_settings_log | Function that updates the settings info log panel
+ fetch_about_file | Function that grabs file from github and displays it in info panel
+ revert_settings_log | Function that resets to showing settings info
+ open_web_docs | Function tasked with open docs in external browser
+ show_tutorial | Function that demonstrates tutorial for using pyautogit
  ask_log_file_path | Prompts user to enter log file path
- get_settings_ascii_art | Gets an ascii art settings title
- toggle_logging | Function that toggles logging for pyautogit
- update_log_file_path | Function that updates the target log file path
- refresh_status | Override of base class refresh function
+ get_settings_ascii_art | Gets ascii art settings logo
+ toggle_editor_type | Function that toggles between internal and external editor
+ toggle_logging | Function that enables/disables logging
+ ask_default_editor | Function that asks user for editor, and then refreshes
+ update_default_editor | Function that updates the new default editor
+ update_log_file_path | Function that updates log file path if valid
+ refresh_status | Override of base class refresh function.
 
 
 

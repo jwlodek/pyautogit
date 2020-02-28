@@ -1,9 +1,4 @@
 """Pyautogit internal editor, based on snano example from py_cui
-
-Classes
--------
-EditorScreenManager
-    Extension of screenManager, manages editor subscreen
 """
 
 import os
@@ -18,27 +13,8 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
     ----------
     opened_path : str
         The current opened path for the editor
-
-    Methods
-    -------
-    initialize_screen_elements()
-        Override of base class. Initializes editor widgets and widget set
-    set_initial_values()
-        Function that sets status bar text
-    clear_elements()
-        Function for clearing widgets in editor screen
-    open_new_directory_external()
-        Opens a new directory given an external target
-    open_new_directory()
-        Function that opens a new directory
-    add_new_file()
-        Function for creating a new file
-    open_file_dir()
-        Function that opens a file/directory from menu
-    save_opened_file()
-        Function that saves the opened file
-    delete_selected_file_dir()
-        Function that deletes the selected file
+    is_new_file_open : bool
+        Flag that says if a new file is open
     """
 
     def __init__(self, top_manager, opened_path):

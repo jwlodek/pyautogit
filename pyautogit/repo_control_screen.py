@@ -5,11 +5,6 @@ CUI and the underlying git commands found in pyautogit.commands
 
 Author: Jakub Wlodek  
 Created: 01-Oct-2019
-
-Classes
--------
-RepoControlManager
-    Extension of ScreenManager, manages repository control actions
 """
 
 import os
@@ -31,67 +26,6 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
     ----------
     menu_choices : list of str
         Overriden list of menu choices accessible from the repository control menu
-
-    Methods
-    -------
-    process_menu_selection()
-        Override of base class, executes based on user menu selection
-    refresh_status()
-        Function that refreshes a git repository status
-    get_repo_status_short()
-        Gets shorthand repository status
-    get_repo_remotes()
-        gets list of repository remotes
-    get_repo_branches()
-        gets list of repository branches
-    show_remote_info()
-        gets info about remote
-    show_commit_info()
-        gets info about a particular commit
-    get_recent_commits()
-        gets list of recent commits to branch
-    create_new_tag()
-        Creates a new tag
-    show_log()
-        Displays the git log
-    stash_all_changes()
-        Stashes all repo changes
-    unstash_all_changes()
-        Pops the stash
-    open_git_diff()
-        Opens current git diff state
-    open_git_diff_file()
-        Gets the diff for a selected file
-    open_editor()
-        Opens an external editor if selected
-    open_editor_file()
-        Opens an external editor for a selected file
-    add_all_changes()
-        Adds all changes to staging
-    add_revert_file
-        Adds/Reverts single file from staging
-    ask_new_remote_name()
-        Asks user for new remote name
-    ask_new_remote_url()
-        Asks user for new remote url
-    add_remote()
-        Adds a new remote to repo
-    delete_remote()
-        Deletes selected remote from local repo
-    rename_remote()
-        Renames selected remote from local repo
-    commit()
-        Commits currently staged items
-    pull_repo_branch()
-        pulls from remote
-    push_repo_branch()
-        pushes to remote
-    create_new_branch()
-        Creates new branch for repository
-    checkout_branch()
-        Checks out specified branch
-    checkout_commit()
-        Checks out specified commit
     """
 
     def __init__(self, top_manager):

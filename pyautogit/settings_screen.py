@@ -1,9 +1,4 @@
 """A subscreen that allows for setting a variety of pyautogit settings.
-
-Classes
--------
-SettingsScreen
-    extends ScreenManager base, adds widgets for controlling pyautogit settings.
 """
 
 import os
@@ -26,21 +21,6 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
         The current settings log text
     show_settings_log : bool
         Toggle for showing settings log
-
-    Methods
-    -------
-    initialize_screen_elements()
-        Override of base class, initializes elements, returns widget set
-    ask_log_file_path()
-        Prompts user to enter log file path
-    get_settings_ascii_art()
-        Gets an ascii art settings title
-    toggle_logging()
-        Function that toggles logging for pyautogit
-    update_log_file_path()
-        Function that updates the target log file path
-    refresh_status()
-        Override of base class refresh function
     """
 
 

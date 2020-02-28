@@ -1,9 +1,4 @@
 """Metadata Management Classes and Functions
-
-Classes
--------
-PyAutogitMetadataManager
-    Class responsible for reading, writing, and applying metadata
 """
 
 import os
@@ -21,15 +16,6 @@ class PyAutogitMetadataManager:
         The top level program manager object
     first_time : bool
         Flag that tells metadata manager if metadata exists
-
-    Methods
-    -------
-    write_metadata()
-        Writes metadata file with cached settings
-    apply_metadata()
-        Applies metadata from cached settings
-    read_metadata()
-        Converts metadata json file to python dict
     """
 
     def __init__(self, manager):

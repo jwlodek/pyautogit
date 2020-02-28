@@ -1,9 +1,4 @@
 """Manager implementation for CUI screen for selecting different repositories.
-
-Classes
--------
-RepoSelectManager
-    Extension of ScreenManager, supports repository selection
 """
 
 import py_cui
@@ -20,23 +15,6 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
     ----------
     menu_choices : list of str
         Overriden attribute from base class with expanded menu choices.
-
-    Methods
-    -------
-    process_menu_selection()
-        Override of base class, executes depending on menu selection
-    refresh_status()
-        Function that refreshes the repositories in the selection screen
-    ask_delete_repo()
-        Function that asks user for confirmation for repo deletion
-    delete_repo()
-        Function that deletes a repo
-    show_repo_status()
-        Function that displays git status info for current repo
-    clone_new_repo()
-        Function that clones new repo from given URL
-    create_new_repo()
-        Function that creates a new repo with a given name
     """
 
     def __init__(self, top_manager):

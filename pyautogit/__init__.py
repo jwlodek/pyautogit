@@ -5,22 +5,6 @@ credential management, as well as functions for switching between subscreens.
 
 Author: Jakub Wlodek  
 Created: 01-Oct-2019
-
-Classes
--------
-PyAutogitManager
-    Main py_cui wrapper class that drives pyautogit. Uses ScreenManager subclass instances for subscreens
-
-Functions
----------
-find_repos_in_path()
-    Searches for .git directories in specified path
-is_git_repo()
-    Checks if given path is a git repository
-parse_args()
-    Parses user arguments
-main()
-    Program entrypoint
 """
 
 # Core Python Utilities
@@ -179,7 +163,7 @@ def main():
         LOGGER.write('Initialized debug logging')
 
     root = py_cui.PyCUI(5, 4)
-    manager = PyAutogitManager(root, target, input_type, save_metadata, credentials)
+    _ = PyAutogitManager(root, target, input_type, save_metadata, credentials)
     
     LOGGER.write('Parsed args. Target location - {}'.format(target_abs))
     LOGGER.write('Initial state - {}'.format(input_type))
@@ -246,39 +230,6 @@ class PyAutogitManager:
         Textbox for entering new commit messages
     repo_control_manager : RepoControlManager
         Manager wrapper for repo control screen
-
-    Methods
-    -------
-    open_not_supported_popup()
-        Function that displays warning for a non-supported operation
-    open_autogit_window()
-        Function that opens the repository control window.
-    open_repo_select_window()
-        Function that opens the repository select window.
-    update_password()
-        Function called once password is entered.
-    ask_password()
-        Function that opens popup and asks for password. Also writes username to credentials
-    ask_credentials()
-        Function that asks for user credentials and places them in the appropriate variables.
-    were_credentials_entered()
-        Simple function for checking if credentials were entered
-    perform_long_operation()
-        Function that wraps an operation around a loading icon popup.
-    update_default_editor()
-        Function that sets the default editor
-    ask_default_editor()
-        Function that asks user to enter a default text editor
-    update_message()
-        Function that is run after user inputs message
-    ask_message()
-        Function that asks the user for input.
-    get_logo_text()
-        Generates ascii-art version of pyautogit logo
-    get_about_info()
-        Generates some about me information
-    get_welcome_message()
-        Function that gets a basic welcome message shown at first run
     """
 
     def __init__(self, root, target_path, current_state, save_metadata, credentials):

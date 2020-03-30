@@ -1,2 +1,2 @@
-py_cui
+py_cui >= 0.1.0
 pytest

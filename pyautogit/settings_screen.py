@@ -43,12 +43,12 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
         """
 
         # Output widget set
-        settings_widget_set = py_cui.widget_set.WidgetSet(9, 6)
+        settings_widget_set = self.manager.root.create_new_widget_set(9, 6)
         settings_widget_set.add_key_command(py_cui.keys.KEY_BACKSPACE, self.manager.open_repo_select_window)
 
         # Logo and link labels
         logo_label = settings_widget_set.add_block_label(self.get_settings_ascii_art(), 0, 0, row_span=2, column_span=3, center=True)
-        logo_label.set_standard_color(py_cui.RED_ON_BLACK)
+        logo_label.set_color(py_cui.RED_ON_BLACK)
         link_label = settings_widget_set.add_label('Settings Screen - pyautogit v{}'.format(pyautogit.__version__), 0, 3, row_span=2, column_span=3)
         link_label.add_text_color_rule('Settings Screen*', py_cui.CYAN_ON_BLACK, 'startswith', match_type='line')
 
@@ -258,6 +258,6 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
         if LOGGER._LOG_ENABLED:
             logging_on_off = 'ON'
         log_file_path = LOGGER._LOG_FILE_PATH
-        self.debug_log_status_label.title = '{} - {}'.format(logging_on_off, log_file_path)
+        self.debug_log_status_label.set_title('{} - {}'.format(logging_on_off, log_file_path))
 
-        self.editor_status_label.title = '{} - {}'.format(self.manager.editor_type, self.manager.default_editor)
+        self.editor_status_label.set_title('{} - {}'.format(self.manager.editor_type, self.manager.default_editor))

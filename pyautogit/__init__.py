@@ -163,6 +163,7 @@ def main():
         LOGGER.write('Initialized debug logging')
 
     root = py_cui.PyCUI(5, 4)
+    root.enable_logging()
     _ = PyAutogitManager(root, target, input_type, save_metadata, credentials)
     
     LOGGER.write('Parsed args. Target location - {}'.format(target_abs))

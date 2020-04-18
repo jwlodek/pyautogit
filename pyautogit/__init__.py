@@ -31,7 +31,7 @@ import pyautogit.metadata_manager as METADATA
 
 
 # Module version + copyright
-__version__     = '0.0.3'
+__version__     = '0.0.4'
 __copyright__   = '2019-2020'
 
 
@@ -163,6 +163,13 @@ def main():
         LOGGER.write('Initialized debug logging')
 
     root = py_cui.PyCUI(5, 4)
+    
+    if debug_logging:
+        root.enable_logging(log_file_path='.pyautogit/py_cui_root.log')
+
+    # Use feature added in py_cui 0.0.3 to add unicode widget borders
+    root.toggle_unicode_borders()
+
     _ = PyAutogitManager(root, target, input_type, save_metadata, credentials)
     
     LOGGER.write('Parsed args. Target location - {}'.format(target_abs))
@@ -555,7 +562,7 @@ class PyAutogitManager:
             ascii-art logo
         """
 
-        logo =         '         _    _ _______ ____   _____ _____ _______\n'
+        logo =         '        _    _ _______ ____   _____ _____ _______\n'
         logo = logo +  '    /\\  | |  | |__   __/ __ \\ / ____|_   _|__   __|\n'
         logo = logo +  '   /  \\ | |  | |  | | | |  | | |  __  | |    | |   \n'
         logo = logo +  '  / /\\ \\| |  | |  | | | |  | | | |_ | | |    | |   \n'
@@ -579,7 +586,7 @@ class PyAutogitManager:
         """
 
         if with_logo:
-            about_info = self.get_logo_text() + '\n\n\n'
+            about_info = ' ' + self.get_logo_text() + '\n\n\n'
         else:
             about_info = '\n'
         about_info = about_info + 'Author: Jakub Wlodek\n\nPython CUI git client: https://github.com/jwlodek/pyautogit\n\n\n'

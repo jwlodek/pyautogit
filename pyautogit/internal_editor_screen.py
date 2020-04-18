@@ -39,7 +39,7 @@ class EditorScreenManager(pyautogit.screen_manager.ScreenManager):
             Widget set for internal editor screen
         """
 
-        pyautogit_editor_widget_set = py_cui.widget_set.WidgetSet(7, 8)
+        pyautogit_editor_widget_set = self.manager.root.create_new_widget_set(7, 8)
 
         self.current_dir_textbox = pyautogit_editor_widget_set.add_text_box('Current Directory', 6, 0, column_span=8)
         self.current_dir_textbox.add_key_command(py_cui.keys.KEY_ENTER, self.open_new_directory)

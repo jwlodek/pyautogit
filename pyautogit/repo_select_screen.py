@@ -71,10 +71,10 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
             Widget set object for repo select screen
         """
 
-        repo_select_widget_set = py_cui.widget_set.WidgetSet(5,4)
+        repo_select_widget_set = self.manager.root.create_new_widget_set(5,4)
         
         logo_label = repo_select_widget_set.add_block_label(self.manager.get_logo_text(), 0, 0, column_span=2, center=False)
-        logo_label.set_standard_color(py_cui.MAGENTA_ON_BLACK)
+        logo_label.set_color(py_cui.MAGENTA_ON_BLACK)
 
         link_label = repo_select_widget_set.add_label('v{} - https://github.com/jwlodek/pyautogit'.format(pyautogit.__version__), 0, 2, column_span=2)
         link_label.add_text_color_rule('https://.*', py_cui.CYAN_ON_BLACK, 'contains', match_type='regex')
@@ -191,7 +191,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         """Function that shows the current repository status
         """
 
-        current_repo = self.repo_menu.selected_item
+        current_repo = self.repo_menu.get_selected_item()
         repo_name = self.repo_menu.get()
         LOGGER.write('Displaying repo status for {}'.format(repo_name))
         self.git_status_box.clear()

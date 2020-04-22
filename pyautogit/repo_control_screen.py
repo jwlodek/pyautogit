@@ -227,9 +227,9 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         self.get_recent_commits()
 
         if len(self.remotes_menu.get_item_list()) > remote:
-            self.remotes_menu.set_selected_item(remote)
+            self.remotes_menu.set_selected_item_index(remote)
         if len(self.add_files_menu.get_item_list()) > selected_file:
-            self.add_files_menu.set_selected_item(selected_file)
+            self.add_files_menu.set_selected_item_index(selected_file)
 
 
     def get_repo_status_short(self):
@@ -273,7 +273,7 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
             if branch.startswith('*'):
                 break
             selected_branch = selected_branch + 1
-        self.branch_menu.set_selected_item(selected_branch)
+        self.branch_menu.set_selected_item_index(selected_branch)
 
 
     def show_tags(self):

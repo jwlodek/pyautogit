@@ -191,7 +191,7 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         """Function that shows the current repository status
         """
 
-        current_repo = self.repo_menu.get_selected_item()
+        current_repo = self.repo_menu.get_selected_item_index()
         repo_name = self.repo_menu.get()
         LOGGER.write('Displaying repo status for {}'.format(repo_name))
         self.git_status_box.clear()

@@ -206,8 +206,8 @@ class RepoControlManager(pyautogit.screen_manager.ScreenManager):
         """Function that refreshes a git repository status
         """
 
-        remote = self.remotes_menu.get_selected_item()
-        selected_file = self.add_files_menu.get_selected_item()
+        remote          = self.remotes_menu.get_selected_item_index()
+        selected_file   = self.add_files_menu.get_selected_item_index()
 
         if self.branch_menu_state == 'branches':
             self.get_repo_branches()

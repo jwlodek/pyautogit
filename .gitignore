@@ -11,3 +11,4 @@ dist/
 *.log
 markdoc/
 npdoc2md/
+venv/

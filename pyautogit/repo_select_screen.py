@@ -93,11 +93,11 @@ class RepoSelectManager(pyautogit.screen_manager.ScreenManager):
         self.repo_menu.set_focus_text('Quit - q | Open - Enter | Status - Space | Menu - m | Refresh - r | Delete - Del | Settings - s | Credentials - c | Editor - e')
 
         self.git_status_box = repo_select_widget_set.add_text_block('Git Repo Status', 1, 0, row_span=4, column_span=2)
-        self.git_status_box.is_selectable = False
+        self.git_status_box.set_selectable(False)
         self.git_status_box.add_text_color_rule('Welcome', py_cui.GREEN_ON_BLACK, 'startswith', match_type='line')
         
         self.current_status_box = repo_select_widget_set.add_text_block('Current Status', 1, 3, row_span=2)
-        self.current_status_box.is_selectable = False
+        self.current_status_box.set_selectable(False)
         
         self.clone_new_box = repo_select_widget_set.add_text_box('Clone Repository - Enter Remote URL', 3, 2, column_span=2)
         self.clone_new_box.add_key_command(py_cui.keys.KEY_ENTER, lambda : self.execute_long_operation('Cloning', self.clone_new_repo, credentials_required=True))

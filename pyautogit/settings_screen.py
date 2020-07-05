@@ -83,7 +83,7 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
 
         # Info panel
         self.settings_info_panel = settings_widget_set.add_text_block('Settings Info Log', 2, 3, row_span=7, column_span=3)
-        self.settings_info_panel.is_selectable = False
+        self.settings_info_panel.set_selectable(False)
         self.info_panel = self.settings_info_panel
 
         if not LOGGER._LOG_ENABLED:
@@ -122,7 +122,7 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
         """
 
         self.info_panel.clear()
-        self.info_panel.is_selectable = True
+        self.info_panel.set_selectable(True)
         self.show_settings_log = False
 
         try:
@@ -142,7 +142,7 @@ class SettingsScreen(pyautogit.screen_manager.ScreenManager):
         """Function that resets to showing settings info
         """
 
-        self.info_panel.is_selectable = False
+        self.info_panel.set_selectable(False)
         if not self.show_settings_log:
             self.show_settings_log = True
         self.info_panel.clear()

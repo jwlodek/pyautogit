@@ -31,7 +31,7 @@ import pyautogit.metadata_manager as METADATA
 
 
 # Module version + copyright
-__version__     = '0.0.4'
+__version__     = '0.0.5'
 __copyright__   = '2019-2020'
 
 
